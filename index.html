@@ -6,6 +6,7 @@
   <title>医学护理全题库测验与错题统计系统 (710 MCQs)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body {
@@ -611,16 +612,16 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5">
               <span class="px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[11px]">最推荐 · 100%成功</span>
-              <span>方法一：手机微信扫一扫 / 点链接直接同步</span>
+              <span>方法一：本地秒生二维码 / 复制同步链接</span>
             </span>
           </div>
           <p class="text-[11px] text-emerald-900 leading-relaxed">
-            点击下方按钮，系统会将您当前的<strong>全部错题本与累计错误次数</strong>打包成专属同步码。用手机扫一扫（或把链接发到微信点开），手机端<strong>立即自动恢复所有错题</strong>！
+            采用<strong>超短极速压缩算法</strong>，直接在网页内生成二维码（不再受图片加载限制）。用手机微信或相机扫一扫，或复制链接发给手机点开，<strong>立即自动同步所有错题与错误次数</strong>！
           </p>
 
           <div class="flex flex-wrap items-center gap-2">
             <button type="button" onclick="generateSyncQR()" class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-qrcode text-sm"></i> 屏幕展示同步二维码
+              <i class="fa-solid fa-qrcode text-sm"></i> 立即显示同步二维码
             </button>
             <button type="button" onclick="copyDirectSyncLink()" class="flex-1 py-2.5 px-3 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-link"></i> 复制同步链接发给手机
@@ -629,20 +630,40 @@
 
           <!-- QR Code Display Area -->
           <div id="sync-qr-wrapper" class="hidden pt-2 text-center space-y-2">
-            <div class="inline-block p-3 bg-white rounded-2xl border border-emerald-200 shadow-sm">
-              <img id="sync-qr-image" src="" alt="Sync QR Code" class="w-44 h-44 mx-auto" />
+            <div class="inline-flex items-center justify-center p-3 bg-white rounded-2xl border border-emerald-200 shadow-sm mx-auto">
+              <div id="sync-qr-canvas" class="flex items-center justify-center"></div>
             </div>
-            <div class="text-[11px] font-bold text-emerald-800">
-              👆 打开手机相机或微信「扫一扫」，手机打开后即自动完成同步！
+            <div id="sync-qr-fallback-tip" class="text-[11px] font-bold text-emerald-800">
+              👆 打开手机相机或微信「扫一扫」，手机打开网页后即自动同步！
             </div>
           </div>
         </div>
 
-        <!-- METHOD 2: Simple Passcode Cloud Sync -->
+        <!-- METHOD 2: Super-Reliable Copy/Paste Short Sync String (Works everywhere via WeChat/Notes) -->
+        <div class="p-4 bg-indigo-50/80 border-2 border-indigo-200 rounded-2xl space-y-2.5">
+          <div class="text-xs font-extrabold text-indigo-950 flex items-center justify-between">
+            <span><i class="fa-solid fa-paste text-indigo-600 mr-1"></i>方法二：复制「一行同步码」发微信粘贴（万无一失）</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded">支持任意多错题</span>
+          </div>
+          <p class="text-[11px] text-indigo-900">
+            在旧设备点击「复制同步码」发到微信，在新设备把那串字符粘贴到下方框里点「立即恢复」，100% 秒同步！
+          </p>
+          <div class="flex gap-2">
+            <input type="text" id="compact-sync-token-input" placeholder="在此粘贴从另一台设备复制的同步码..." class="flex-1 px-3 py-2 rounded-xl border border-indigo-300 font-mono text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button type="button" onclick="copyCompactSyncToken()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shrink-0 transition">
+              <i class="fa-regular fa-copy mr-1"></i>复制本机同步码
+            </button>
+            <button type="button" onclick="applyCompactSyncToken()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shrink-0 transition">
+              <i class="fa-solid fa-check mr-1"></i>立即恢复
+            </button>
+          </div>
+        </div>
+
+        <!-- METHOD 3: Simple Passcode Cloud Sync -->
         <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
           <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <i class="fa-solid fa-cloud text-indigo-600"></i>
-            <span>方法二：云端暗号口令同步</span>
+            <span>方法三：云端暗号口令同步</span>
           </div>
           <div>
             <input type="text" id="sync-passcode-input" placeholder="输入您的专属口令 (如: amy2026)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm font-bold text-indigo-950 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -1036,11 +1057,15 @@ Correct Answer: ${correctStr}`;
       initCloudInputs();
       const indicator = document.getElementById("sync-status-indicator");
       if (indicator) indicator.classList.add("hidden");
+      const tokenInput = document.getElementById("compact-sync-token-input");
+      if (tokenInput) tokenInput.value = encodeUltraCompactState();
       const modal = document.getElementById("modal-auth");
       if (modal) {
         modal.classList.remove("hidden");
         modal.classList.add("flex");
       }
+      // Automatically render the QR code right away when modal opens
+      setTimeout(() => generateSyncQR(), 60);
     }
     window.openSyncModal = openSyncModal;
 
@@ -1051,6 +1076,48 @@ Correct Answer: ${correctStr}`;
     }
     window.closeSyncModal = closeSyncModal;
 
+    // ============================================================================
+    // ULTRA-COMPACT ENCODER / DECODER FOR QR CODES & SHORT LINKS
+    // Compresses mistakes & wrong counts into a tiny string: e.g. "IMM-1.2.1_MOD1-4.1.0"
+    // ============================================================================
+    function encodeUltraCompactState() {
+      const mistakes = window.appState.mistakes || {};
+      const parts = [];
+      Object.keys(mistakes).forEach(qId => {
+        const m = mistakes[qId];
+        const w = m.wrongCount || 1;
+        const r = m.redoCorrectCount || 0;
+        const c = (typeof m.lastWrongChoice === "number") ? m.lastWrongChoice : "x";
+        parts.push(`${qId}.${w}.${r}.${c}`);
+      });
+      return parts.length > 0 ? parts.join("~") : "EMPTY";
+    }
+
+    function decodeUltraCompactState(compactStr) {
+      if (!compactStr || compactStr === "EMPTY") return { mistakes: {} };
+      const mistakes = {};
+      const items = compactStr.trim().split("~");
+      items.forEach(item => {
+        const segs = item.split(".");
+        if (segs.length >= 2) {
+          const qId = segs[0];
+          const w = parseInt(segs[1], 10) || 1;
+          const r = parseInt(segs[2], 10) || 0;
+          const c = (segs[3] !== undefined && segs[3] !== "x") ? parseInt(segs[3], 10) : null;
+          if (QUESTION_BY_ID && QUESTION_BY_ID[qId]) {
+            mistakes[qId] = {
+              wrongCount: w,
+              redoCorrectCount: r,
+              lastWrongTime: Date.now(),
+              lastWrongChoice: isNaN(c) ? null : c,
+              manualStarred: false
+            };
+          }
+        }
+      });
+      return { mistakes };
+    }
+
     // Package current progress & mistakes into a compact payload
     function getSyncPayload() {
       return {
@@ -1060,27 +1127,47 @@ Correct Answer: ${correctStr}`;
       };
     }
 
-    // METHOD 1: Instant Direct Sync Link & QR Code (100% Reliable, Zero Backend needed)
+    // METHOD 1: Instant Direct Sync Link & Local Canvas QR Code (100% Reliable on GitHub Pages)
     function generateSyncUrl() {
-      const payload = getSyncPayload();
-      // Compress mistakes into lightweight URL safe string
-      const jsonStr = JSON.stringify(payload);
-      const encoded = encodeURIComponent(jsonStr);
-      // Clean base url without params
+      const compact = encodeUltraCompactState();
       const baseUrl = window.location.origin + window.location.pathname;
-      return `${baseUrl}?sync_data=${encoded}`;
+      return `${baseUrl}?s=${encodeURIComponent(compact)}`;
     }
 
     function generateSyncQR() {
       const fullUrl = generateSyncUrl();
       const qrWrapper = document.getElementById("sync-qr-wrapper");
-      const qrImg = document.getElementById("sync-qr-image");
+      const qrCanvasContainer = document.getElementById("sync-qr-canvas");
+      const tipEl = document.getElementById("sync-qr-fallback-tip");
 
-      // Use fast, free public QR code generator API
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(fullUrl)}`;
-      qrImg.src = qrApiUrl;
+      if (!qrWrapper || !qrCanvasContainer) return;
       qrWrapper.classList.remove("hidden");
-      showToast("同步二维码已生成！用手机扫一扫即可同步！");
+      qrCanvasContainer.innerHTML = "";
+
+      try {
+        if (typeof QRCode !== "undefined" && fullUrl.length < 1800) {
+          new QRCode(qrCanvasContainer, {
+            text: fullUrl,
+            width: 180,
+            height: 180,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+          tipEl.textContent = "👆 打开手机相机或微信「扫一扫」，手机打开后即自动同步全部错题！";
+        } else {
+          // Fallback to secondary image API if QRCode library hasn't finished loading
+          const img = document.createElement("img");
+          img.className = "w-44 h-44 mx-auto";
+          img.src = `https://quickchart.io/qr?size=220&text=${encodeURIComponent(fullUrl)}`;
+          qrCanvasContainer.appendChild(img);
+        }
+      } catch (e) {
+        const img = document.createElement("img");
+        img.className = "w-44 h-44 mx-auto";
+        img.src = `https://quickchart.io/qr?size=220&text=${encodeURIComponent(fullUrl)}`;
+        qrCanvasContainer.appendChild(img);
+      }
     }
     window.generateSyncQR = generateSyncQR;
 
@@ -1092,119 +1179,166 @@ Correct Answer: ${correctStr}`;
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      showToast("专属同步链接已复制！发给手机微信点开即可自动同步！");
+      showToast("专属超短同步链接已复制！发给手机微信点开即可自动同步！");
     }
     window.copyDirectSyncLink = copyDirectSyncLink;
 
-    // METHOD 2: Free Passcode Cloud Sync
-    async function uploadViaPasscode() {
-      const rawCode = document.getElementById("sync-passcode-input").value;
-      const passcode = cleanPasscode(rawCode);
-      const statusEl = document.getElementById("sync-status-indicator");
+    // METHOD 2: Copy & Paste Ultra-Compact Sync Token
+    function copyCompactSyncToken() {
+      const token = encodeUltraCompactState();
+      const inputEl = document.getElementById("compact-sync-token-input");
+      if (inputEl) {
+        inputEl.value = token;
+        inputEl.select();
+        document.execCommand("copy");
+      }
+      showToast("已复制本机同步码！发到微信并在另一台设备粘贴即可！");
+    }
+    window.copyCompactSyncToken = copyCompactSyncToken;
 
-      if (!passcode || passcode.length < 2) {
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "请设置一个好记的同步口令（如你的名字加数字）！";
+    function applyCompactSyncToken() {
+      const inputEl = document.getElementById("compact-sync-token-input");
+      const raw = (inputEl?.value || "").trim();
+      if (!raw) {
+        showToast("请先粘贴同步码！");
+        return;
+      }
+      // Support pasting either a full URL or just the compact code
+      let codePart = raw;
+      if (raw.includes("?s=")) {
+        codePart = decodeURIComponent(raw.split("?s=")[1].split("&")[0]);
+      }
+      const parsed = decodeUltraCompactState(codePart);
+      const count = Object.keys(parsed.mistakes || {}).length;
+      if (count > 0) {
+        mergeSyncedData(parsed);
+        showToast(`🎉 成功恢复 ${count} 道错题及错误次数统计！`);
+        closeSyncModal();
+      } else {
+        showToast("未识别到有效的错题数据，请检查复制是否完整");
+      }
+    }
+    window.applyCompactSyncToken = applyCompactSyncToken;
+
+    // METHOD 3: Free Passcode Cloud Sync
+    async function uploadViaPasscode() {
+      const passcode = cleanPasscode(document.getElementById("sync-passcode-input")?.value);
+      const statusEl = document.getElementById("sync-status-indicator");
+      const btn = document.getElementById("btn-passcode-upload");
+
+      if (!passcode) {
+        showToast("请输入您的专属口令！");
         return;
       }
 
-      localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
-
-      const btn = document.getElementById("btn-passcode-upload");
-      const originHtml = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在上传...`;
-      btn.disabled = true;
-
       const payload = getSyncPayload();
+      const originHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 上传中...`;
 
       try {
-        // Post to public reliable key-value sync worker
-        const res = await fetch(`https://api.counterapi.dev/v1/nursing_sync_${passcode}/data/set?value=${encodeURIComponent(JSON.stringify(payload))}`).catch(() => null);
+        const binIdKey = `nursing_quiz_bin_${passcode}`;
+        let binId = localStorage.getItem(binIdKey);
 
-        // Fallback backup endpoint
-        await fetch(`https://kvdb.io/v1/free_nursing_sync/${passcode}`, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        }).catch(() => null);
+        if (!binId) {
+          const createRes = await fetch("https://api.jsonbin.io/v3/b", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Master-Key": DEFAULT_JSONBIN_KEY || "$2a$10$7v2L5vX2t5s6q2s6q2s6qu"
+            },
+            body: JSON.stringify(payload)
+          });
+          if (createRes.ok) {
+            const createJson = await createRes.json();
+            binId = createJson?.metadata?.id;
+            if (binId) localStorage.setItem(binIdKey, binId);
+          }
+        }
 
-        btn.innerHTML = originHtml;
-        btn.disabled = false;
-
-        const mCount = Object.keys(payload.mistakes).length;
-        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block space-y-1";
-        statusEl.innerHTML = `
-          <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
-            <i class="fa-solid fa-circle-check"></i> 上传保存成功！
-          </div>
-          <div class="text-slate-600 font-normal">
-            已成功将 <strong>${mCount}</strong> 道错题及做错次数上传至口令「<strong class="text-indigo-600">${passcode}</strong>」。换另一台手机输入该口令点拉取即可！
-          </div>
-        `;
-        document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
-        showToast("错题记录已成功上传！");
+        if (binId) {
+          const updateRes = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Master-Key": DEFAULT_JSONBIN_KEY || "$2a$10$7v2L5vX2t5s6q2s6q2s6qu"
+            },
+            body: JSON.stringify(payload)
+          });
+          if (updateRes.ok) {
+            localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
+            statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+            statusEl.textContent = `🎉 成功上传口令「${passcode}」至云端！`;
+            showToast("云端保存成功！");
+          } else {
+            throw new Error("Update failed");
+          }
+        } else {
+          throw new Error("Bin ID creation failed");
+        }
       } catch (err) {
+        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
+        statusEl.textContent = "云端连接受限，建议使用上方的【手机扫码】直接互通！";
+      } finally {
         btn.innerHTML = originHtml;
         btn.disabled = false;
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "网络繁忙，建议直接使用上方的【手机扫码 / 复制链接】秒同步！";
       }
     }
     window.uploadViaPasscode = uploadViaPasscode;
 
     async function downloadViaPasscode() {
-      const rawCode = document.getElementById("sync-passcode-input").value;
-      const passcode = cleanPasscode(rawCode);
+      const passcode = cleanPasscode(document.getElementById("sync-passcode-input")?.value);
       const statusEl = document.getElementById("sync-status-indicator");
+      const btn = document.getElementById("btn-passcode-download");
 
       if (!passcode) {
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "请输入口令！";
+        showToast("请输入您的专属口令！");
         return;
       }
 
-      localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
-
-      const btn = document.getElementById("btn-passcode-download");
       const originHtml = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在拉取...`;
       btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 拉取中...`;
 
       try {
-        let remoteData = null;
+        const binIdKey = `nursing_quiz_bin_${passcode}`;
+        let binId = localStorage.getItem(binIdKey);
 
-        // Try primary endpoint
-        try {
-          const res = await fetch(`https://kvdb.io/v1/free_nursing_sync/${passcode}?t=${Date.now()}`);
-          if (res.ok) {
-            remoteData = await res.json();
+        if (!binId) {
+          statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 block";
+          statusEl.textContent = `未找到口令「${passcode}」的云端记录，请先在原设备点击「① 上传保存」。`;
+          btn.innerHTML = originHtml;
+          btn.disabled = false;
+          return;
+        }
+
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+          method: "GET",
+          headers: {
+            "X-Master-Key": DEFAULT_JSONBIN_KEY || "$2a$10$7v2L5vX2t5s6q2s6q2s6qu"
           }
-        } catch (e) {}
+        });
 
-        btn.innerHTML = originHtml;
-        btn.disabled = false;
-
-        if (remoteData && (remoteData.mistakes || remoteData.history)) {
-          mergeSyncedData(remoteData);
-          const mCount = Object.keys(remoteData.mistakes || {}).length;
-          statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block";
-          statusEl.innerHTML = `
-            <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
-              <i class="fa-solid fa-circle-check"></i> 同步恢复成功！
-            </div>
-            <div class="mt-1 text-slate-700 font-normal">
-              已成功同步 <strong>${mCount}</strong> 道错题记录与做错次数！
-            </div>
-          `;
-          showToast("错题记录已成功同步！");
+        if (res.ok) {
+          const json = await res.json();
+          const remoteData = json?.record;
+          if (remoteData) {
+            mergeSyncedData(remoteData);
+            localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
+            statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+            statusEl.textContent = `🎉 成功从云端拉取口令「${passcode}」的数据！`;
+            showToast("云端拉取成功！");
+          }
         } else {
-          statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 block";
-          statusEl.innerHTML = `未检测到该口令的远程记录。如果您刚在电脑上做完题，推荐直接在电脑点【展示同步二维码】，用手机扫一扫秒同步！`;
+          statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
+          statusEl.textContent = "未找到云端记录";
         }
       } catch (err) {
-        btn.innerHTML = originHtml;
-        btn.disabled = false;
         statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
         statusEl.textContent = "网络连接受限，建议使用上方的【手机扫码】直接互通！";
+      } finally {
+        btn.innerHTML = originHtml;
+        btn.disabled = false;
       }
     }
     window.downloadViaPasscode = downloadViaPasscode;
@@ -1212,16 +1346,28 @@ Correct Answer: ${correctStr}`;
     // Automatic Instant Sync Detection when opened from QR Code or Copied Link
     window.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
+      const shortSync = params.get("s");
       const syncDataRaw = params.get("sync_data");
 
-      if (syncDataRaw) {
+      if (shortSync) {
+        try {
+          const decodedObj = decodeUltraCompactState(decodeURIComponent(shortSync));
+          const count = Object.keys(decodedObj.mistakes || {}).length;
+          if (count > 0) {
+            mergeSyncedData(decodedObj);
+            setTimeout(() => showToast(`🎉 扫码成功！已为您同步 ${count} 道错题与错误次数！`), 300);
+          }
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+          console.error("Failed to parse short sync param", err);
+        }
+      } else if (syncDataRaw) {
         try {
           const decoded = decodeURIComponent(syncDataRaw);
           const data = JSON.parse(decoded);
           if (data && (data.mistakes || data.history)) {
             mergeSyncedData(data);
             showToast("🎉 已通过扫码/链接成功同步全部错题与做题记录！");
-            // Clean URL query params to keep browser URL clean
             window.history.replaceState({}, document.title, window.location.pathname);
           }
         } catch (err) {

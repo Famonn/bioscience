@@ -370,7 +370,299 @@
           </div>
 
           <!-- Bottom Navigation Controls -->
-          <!-- Bottom Local File Backup Option -->
+          <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <button onclick="prevQuestion()" id="btn-prev-q" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none transition">
+              <i class="fa-solid fa-arrow-left"></i> <span>上一题 (P)</span>
+            </button>
+
+            <div class="flex items-center gap-2">
+              <button onclick="revealCurrentAnswer()" id="btn-reveal-ans" class="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold text-xs sm:text-sm transition">
+                <i class="fa-regular fa-eye mr-1"></i>看答案与解析
+              </button>
+              <button onclick="nextQuestion()" id="btn-next-q" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-sm flex items-center gap-2 transition">
+                <span>下一题 (N)</span> <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Question Map / Sheet -->
+        <div id="question-sheet-panel" class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 sticky top-20">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-table-cells text-indigo-600"></i>
+              <span>答题卡导航 (Question Map)</span>
+            </h4>
+            <button onclick="restartCurrentQuiz()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> 重置本场
+            </button>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> 本次答对</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> 本次答错</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block"></span> 未作答</span>
+          </div>
+
+          <div id="question-map-grid" class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 xl:grid-cols-6 gap-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+            <!-- Populated by JS -->
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>快捷键：数字键 1-4 选择，N 下一题，P/← 上一题</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: MISTAKE BANK & ANALYTICS ================= -->
+    <section id="tab-mistakes" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5">
+            <span class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-book-medical"></i>
+            </span>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">我的错题本与错误频次统计</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500">
+            所有做错过的题目都会保存在此，并精确记录每道题<strong>累计错了多少次</strong>。支持按模块筛选、按错误次数排序重做。
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="startMistakeQuiz('filtered')" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-play"></i> 重做当前筛选错题 (<span id="mistake-filtered-ActionCount">0</span>)
+          </button>
+          <button onclick="startMistakeQuiz('frequent')" class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-1.5">
+            <i class="fa-solid fa-fire"></i> 只重做高频错题 (错≥2次)
+          </button>
+          <button onclick="openClearMistakesConfirm()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-xs sm:text-sm rounded-xl transition">
+            <i class="fa-solid fa-trash-can mr-1"></i>清理已掌握
+          </button>
+        </div>
+      </div>
+
+      <!-- Mistake Breakdown by Module -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">各模块错题分布与累计错误次数</h3>
+        <div id="mistake-module-bars" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Filter & Sort Controls -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500">所属模块:</label>
+            <select id="mistake-filter-module" onchange="renderMistakesTab()" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-700 focus:outline-none focus:border-indigo-500">
+              <option value="ALL">全部模块 (All Modules)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500">错误频次:</label>
+            <select id="mistake-filter-freq" onchange="renderMistakesTab()" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-700 focus:outline-none focus:border-indigo-500">
+              <option value="1">全部错题 (错 ≥ 1 次)</option>
+              <option value="2">高频错题 (错 ≥ 2 次)</option>
+              <option value="3">顽固错题 (错 ≥ 3 次)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500">排序方式:</label>
+          <select id="mistake-sort-by" onchange="renderMistakesTab()" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-700 focus:outline-none focus:border-indigo-500">
+            <option value="wrongDesc">按错误次数：从多到少 (优先攻克)</option>
+            <option value="recentDesc">按最近答错时间：最新优先</option>
+            <option value="idAsc">按题库题号顺序</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mistake Cards List -->
+      <div id="mistakes-list-container" class="space-y-4">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: FULL QUESTION BANK SEARCH & BROWSE ================= -->
+    <section id="tab-browse" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">全题库 710 题检索与背题模式</h2>
+            <p class="text-xs text-slate-500">支持输入英文关键词、药名、疾病名实时检索题目，可一键开启背题模式直接显示标准答案与双语解析</p>
+          </div>
+          <label class="inline-flex items-center cursor-pointer self-start sm:self-center bg-indigo-50 px-3.5 py-2 rounded-xl border border-indigo-200">
+            <input type="checkbox" id="browse-show-answers" class="sr-only peer" checked onchange="renderBrowseTab()">
+            <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-indigo-600"></div>
+            <span class="ml-2 text-xs font-bold text-indigo-900">背题模式 (直接显示正确答案与双语解析)</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-7 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+            <input type="text" id="browse-search-input" oninput="renderBrowseTab(1)" placeholder="搜索题目关键词，如：insulin, warfarin, hypoxia, methotrexate, IgE..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition" />
+          </div>
+          <div class="sm:col-span-5">
+            <select id="browse-module-select" onchange="renderBrowseTab(1)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:border-indigo-500">
+              <option value="ALL">全部 9 个模块 (710 题)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+          <span id="browse-result-count">共找到 710 道题目</span>
+          <div id="browse-pagination" class="flex items-center gap-1.5"></div>
+        </div>
+      </div>
+
+      <div id="browse-questions-list" class="space-y-3">
+        <!-- Populated by JS -->
+      </div>
+
+      <div id="browse-pagination-bottom" class="flex items-center justify-center gap-2 py-4"></div>
+    </section>
+
+  </main>
+
+  <!-- Backup / Restore Modal -->
+  <div id="modal-backup" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-down text-indigo-600"></i>
+          <span>错题本与进度数据备份 / 恢复</span>
+        </h3>
+        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        您的错题记录与错误次数会自动保存在浏览器中。如果需要更换电脑/手机，可以复制下方的备份代码或下载备份文件，在另一台设备粘贴恢复。
+      </p>
+      <textarea id="backup-json-textarea" rows="5" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-700 focus:outline-none focus:border-indigo-500"></textarea>
+      <div id="backup-status-msg" class="text-xs font-semibold text-emerald-600 hidden"></div>
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <div class="flex items-center gap-2">
+          <button onclick="downloadBackupFile()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+            <i class="fa-solid fa-download mr-1"></i>下载备份文件 (.json)
+          </button>
+          <button onclick="importBackupJson()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition">
+            <i class="fa-solid fa-file-import mr-1"></i>从上方文本框恢复数据
+          </button>
+        </div>
+        <button onclick="closeBackupModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Mistakes Confirmation Modal -->
+  <div id="modal-clear-confirm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-broom"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-base">清理错题本选项</h3>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        请选择您要清理的范围：您可以只移除<strong>「重做已答对过」</strong>的题目，或者彻底清空所有错题记录。
+      </p>
+      <div class="space-y-2 pt-2">
+        <button onclick="clearMasteredMistakes()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check-double"></i> 仅移除「重做已答对」的错题 (推荐)
+        </button>
+        <button onclick="clearAllMistakes()" class="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs sm:text-sm font-semibold rounded-xl transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-trash"></i> 彻底清空全部错题与错误次数
+        </button>
+        <button onclick="closeClearMistakesConfirm()" class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs sm:text-sm font-medium rounded-xl transition">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zero-Setup Cross-Device Sync Modal (QR Code + Direct Link + Free Cloud Passcode) -->
+  <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-base shadow-sm">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">免安装 · 手机与电脑秒同步</h3>
+            <p class="text-[11px] text-slate-500">无需配置任何数据库，直接把错题本与错误次数带到手机或 iPad</p>
+          </div>
+        </div>
+        <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- METHOD 1: Instant QR Code & Direct Sync Link -->
+        <div class="p-4 bg-emerald-50/90 border-2 border-emerald-300 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5">
+              <span class="px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[11px]">最推荐 · 100%成功</span>
+              <span>方法一：手机微信扫一扫 / 点链接直接同步</span>
+            </span>
+          </div>
+          <p class="text-[11px] text-emerald-900 leading-relaxed">
+            点击下方按钮，系统会将您当前的<strong>全部错题本与累计错误次数</strong>打包成专属同步码。用手机扫一扫（或把链接发到微信点开），手机端<strong>立即自动恢复所有错题</strong>！
+          </p>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="generateSyncQR()" class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-qrcode text-sm"></i> 屏幕展示同步二维码
+            </button>
+            <button type="button" onclick="copyDirectSyncLink()" class="flex-1 py-2.5 px-3 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-link"></i> 复制同步链接发给手机
+            </button>
+          </div>
+
+          <!-- QR Code Display Area -->
+          <div id="sync-qr-wrapper" class="hidden pt-2 text-center space-y-2">
+            <div class="inline-block p-3 bg-white rounded-2xl border border-emerald-200 shadow-sm">
+              <img id="sync-qr-image" src="" alt="Sync QR Code" class="w-44 h-44 mx-auto" />
+            </div>
+            <div class="text-[11px] font-bold text-emerald-800">
+              👆 打开手机相机或微信「扫一扫」，手机打开后即自动完成同步！
+            </div>
+          </div>
+        </div>
+
+        <!-- METHOD 2: Simple Passcode Cloud Sync -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+          <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-cloud text-indigo-600"></i>
+            <span>方法二：云端暗号口令同步</span>
+          </div>
+          <div>
+            <input type="text" id="sync-passcode-input" placeholder="输入您的专属口令 (如: amy2026)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm font-bold text-indigo-950 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div id="sync-status-indicator" class="hidden text-xs font-semibold p-3 rounded-xl"></div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" id="btn-passcode-upload" onclick="uploadViaPasscode()" class="py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>① 上传保存</span>
+            </button>
+            <button type="button" id="btn-passcode-download" onclick="downloadViaPasscode()" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+              <span>② 拉取同步</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Local File Backup Option -->
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
           <button onclick="openBackupModal(); closeSyncModal();" class="text-indigo-600 hover:underline font-medium flex items-center gap-1">
             <i class="fa-solid fa-file-export"></i> 导出/导入本地文件备份
@@ -735,17 +1027,20 @@ Correct Answer: ${correctStr}`;
       if (passEl && savedPass) passEl.value = savedPass;
 
       if (savedPass) {
-        document.getElementById("nav-user-label").textContent = `口令: ${savedPass}`;
-        document.getElementById("cloud-status-text").innerHTML = `当前绑定口令: <strong class="text-indigo-600">${savedPass}</strong> (支持手机扫码或输入口令同步)`;
+        const navLabel = document.getElementById("nav-user-label");
+        if (navLabel) navLabel.textContent = `口令: ${savedPass}`;
       }
     }
 
     function openSyncModal() {
       initCloudInputs();
-      document.getElementById("sync-status-indicator").classList.add("hidden");
+      const indicator = document.getElementById("sync-status-indicator");
+      if (indicator) indicator.classList.add("hidden");
       const modal = document.getElementById("modal-auth");
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
     }
     window.openSyncModal = openSyncModal;
 

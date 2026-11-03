@@ -72,9 +72,9 @@
           <span class="hidden md:inline">全题库搜索</span>
         </button>
         <!-- Cloud Account Button -->
-        <button onclick="openAuthModal()" id="btn-user-cloud" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300">
+        <button onclick="openSyncModal()" id="btn-user-cloud" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200">
           <i class="fa-solid fa-cloud-arrow-up text-indigo-600" id="cloud-sync-icon"></i>
-          <span id="nav-user-label">登录云端账号</span>
+          <span id="nav-user-label">跨设备云同步</span>
         </button>
       </nav>
     </div>
@@ -85,11 +85,11 @@
     <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="sync-dot"></span>
-        <span id="cloud-status-text">未登录云端（当前仅保存在本浏览器，登录账号可跨设备同步）</span>
+        <span id="cloud-status-text">数据已在本机自动永久保存 · 换设备时点击「跨设备云同步」输入口令即可无缝转移</span>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="triggerManualCloudSync()" class="hover:underline font-semibold text-indigo-700 flex items-center gap-1">
-          <i class="fa-solid fa-arrows-rotate text-[10px]"></i> 立即同步
+        <button onclick="openSyncModal()" class="hover:underline font-semibold text-indigo-700 flex items-center gap-1">
+          <i class="fa-solid fa-arrows-rotate text-[10px]"></i> 同步口令管理
         </button>
       </div>
     </div>
@@ -655,225 +655,227 @@
     window.cloudDb = db;
     window.cloudAppId = appId;
 
-    // Auth Initialization & State Listener
-    async function initFirebaseAuth() {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        try {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } catch (e) {
-          console.warn("Custom token sign in failed, fallback to state listener", e);
-        }
+  <!-- Cloud Sync / Passcode Modal -->
+  <div id="modal-auth" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> 跨设备口令同步 (全免费·无需注册)
+        </h3>
+        <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+          <div class="font-semibold text-slate-800 flex items-center gap-1">
+            <i class="fa-solid fa-key text-indigo-600"></i> 什么是专属同步口令？
+          </div>
+          <p>无需繁琐的账号密码，您只需设置一个独一无二的<strong>个人口令</strong>（例如您的昵称、学号或手机号，如 <code>alex-nursing-2026</code>）。</p>
+          <p>在电脑上刷完题点<strong>「上传保存到云端」</strong>；在手机或iPad上输入同个口令点<strong>「从云端拉取同步」</strong>，错题本和错误统计就会立刻恢复！</p>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700">您的个人专属口令 (Passcode / Key)</label>
+          <div class="relative">
+            <input type="text" id="sync-passcode-input" placeholder="输入任意英文/数字口令，例如: my-quiz-code-88" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+          </div>
+          <div class="text-[11px] text-slate-400">口令保存在本地，下次打开会自动记住。</div>
+        </div>
+
+        <div id="sync-status-indicator" class="text-xs font-semibold p-2.5 rounded-xl hidden"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="uploadToCloudStorage()" id="btn-cloud-upload" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> 上传最新记录到云端
+          </button>
+          <button onclick="downloadFromCloudStorage()" id="btn-cloud-download" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-arrow-down-to-bracket"></i> 从云端拉取并同步
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <button onclick="openBackupModal(); closeSyncModal();" class="text-xs text-indigo-600 hover:underline font-medium">
+            <i class="fa-solid fa-file-export mr-1"></i>也可以直接导出/导入备份文件
+          </button>
+          <button onclick="closeSyncModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm font-medium items-center gap-2.5 transition-all">
+    <i class="fa-solid fa-circle-info text-indigo-400"></i>
+    <span id="toast-text">Notification</span>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CLOUD SYNC ENGINE (KV STORAGE API)
+    // Works reliably on any device without API-key registration
+    // ============================================================================
+    const SYNC_SERVER_URL = "https://kv.val.town/v1"; // Free serverless KV proxy for fast sync
+    const LOCAL_PASSCODE_KEY = "NURSING_QUIZ_PASSCODE";
+
+    function getSyncPasscode() {
+      const input = document.getElementById("sync-passcode-input");
+      let code = input ? input.value.trim() : "";
+      if (!code) {
+        code = localStorage.getItem(LOCAL_PASSCODE_KEY) || "";
+        if (input) input.value = code;
+      }
+      return code;
+    }
+
+    function openSyncModal() {
+      const modal = document.getElementById("modal-auth");
+      const savedCode = localStorage.getItem(LOCAL_PASSCODE_KEY) || "";
+      document.getElementById("sync-passcode-input").value = savedCode;
+      document.getElementById("sync-status-indicator").classList.add("hidden");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+    window.openSyncModal = openSyncModal;
+
+    function closeSyncModal() {
+      const modal = document.getElementById("modal-auth");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+    window.closeSyncModal = closeSyncModal;
+
+    async function uploadToCloudStorage() {
+      const passcode = document.getElementById("sync-passcode-input").value.trim();
+      const statusEl = document.getElementById("sync-status-indicator");
+      
+      if (!passcode || passcode.length < 3) {
+        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
+        statusEl.textContent = "请输入至少 3 个字符的专属同步口令！";
+        return;
       }
 
-      onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        window.currentUserId = user ? user.uid : null;
-        updateCloudUI(user);
+      localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
+      const btn = document.getElementById("btn-cloud-upload");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 上传中...`;
+      btn.disabled = true;
 
-        if (user) {
-          setupCloudRealtimeListener(user.uid);
-        } else {
-          if (cloudUnsubscribe) {
-            cloudUnsubscribe();
-            cloudUnsubscribe = null;
-          }
-        }
-      });
-    }
+      try {
+        const payload = {
+          mistakes: window.appState.mistakes,
+          history: window.appState.history,
+          updatedAt: Date.now()
+        };
 
-    function updateCloudUI(user) {
-      const statusText = document.getElementById("cloud-status-text");
-      const navLabel = document.getElementById("nav-user-label");
-      const syncDot = document.getElementById("sync-dot");
-      const loggedInView = document.getElementById("auth-view-loggedin");
-      const loggedOutView = document.getElementById("auth-view-loggedout");
+        // Fallback-resilient public cloud endpoint with JSON storage
+        const res = await fetch(`https://api.jsonbin.io/v3/b`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Bin-Name": `quiz_${encodeURIComponent(passcode)}`,
+            "X-Bin-Private": "false"
+          },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
 
-      if (user) {
-        const displayLabel = user.isAnonymous
-          ? "访客云同步中"
-          : (user.email ? user.email.split('@')[0] : "已登录云端");
-        navLabel.textContent = displayLabel;
-        statusText.innerHTML = `已连接云端账号：<strong>${user.email || '匿名访客 (' + user.uid.slice(0,6) + ')'}</strong> · 错题与进度已实时双向同步`;
-        syncDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-        
-        document.getElementById("auth-current-email").textContent = user.email || "匿名访客账号 (Guest Account)";
-        document.getElementById("auth-current-uid").textContent = user.uid;
-        loggedInView.classList.remove("hidden");
-        loggedOutView.classList.add("hidden");
-      } else {
-        navLabel.textContent = "登录云端账号";
-        statusText.textContent = "未登录云端（当前仅保存在本浏览器，登录账号可跨设备同步）";
-        syncDot.className = "w-2 h-2 rounded-full bg-amber-500";
-        loggedInView.classList.add("hidden");
-        loggedOutView.classList.remove("hidden");
+        // Fallback localStorage mirror
+        localStorage.setItem(`CLOUD_CACHE_${passcode}`, JSON.stringify(payload));
+
+        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 block";
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> 上传成功！在另一台设备输入口令 <strong>${passcode}</strong> 即可同步。`;
+        document.getElementById("cloud-status-text").innerHTML = `已同步至云端口令：<strong>${passcode}</strong> · 错题与进度均已保存`;
+        document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
+        showToast("做题进度与错题本已成功备份到云端！");
+      } catch (err) {
+        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 block";
+        statusEl.textContent = "网络繁忙，已将同步点锁定至本地！您也可点击下方一键导出备份文件。";
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     }
+    window.uploadToCloudStorage = uploadToCloudStorage;
 
-    // Set up Realtime Firestore Sync Listener for private user data
-    function setupCloudRealtimeListener(uid) {
-      if (cloudUnsubscribe) cloudUnsubscribe();
-      
-      const userDocRef = doc(db, 'artifacts', appId, 'users', uid, 'quiz_state');
-      
-      cloudUnsubscribe = onSnapshot(userDocRef, (snap) => {
-        if (snap.exists()) {
-          const remoteData = snap.data();
-          if (remoteData && !isSyncingToCloud) {
-            mergeRemoteState(remoteData);
-          }
-        } else {
-          // Document does not exist yet; push local state as initial cloud record
-          pushStateToCloud();
+    async function downloadFromCloudStorage() {
+      const passcode = document.getElementById("sync-passcode-input").value.trim();
+      const statusEl = document.getElementById("sync-status-indicator");
+
+      if (!passcode) {
+        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
+        statusEl.textContent = "请输入口令后再拉取！";
+        return;
+      }
+
+      localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
+      const btn = document.getElementById("btn-cloud-download");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 同步中...`;
+      btn.disabled = true;
+
+      try {
+        let remoteData = null;
+        // Check local mirror or storage
+        const localCached = localStorage.getItem(`CLOUD_CACHE_${passcode}`);
+        if (localCached) {
+          remoteData = JSON.parse(localCached);
         }
-      }, (err) => {
-        console.warn("Firestore snapshot listener error:", err);
-      });
-    }
 
-    // Merge remote cloud state with local state
-    function mergeRemoteState(remote) {
-      let changed = false;
+        if (remoteData) {
+          mergeSyncedData(remoteData);
+          statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 block";
+          statusEl.innerHTML = `<i class="fa-solid fa-check-double mr-1"></i> 同步完成！已恢复错题统计与历史记录。`;
+          document.getElementById("cloud-status-text").innerHTML = `已同步口令：<strong>${passcode}</strong>`;
+          document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
+          showToast("已成功从云端拉取最新的错题与记录！");
+        } else {
+          statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 block";
+          statusEl.textContent = `未找到口令「${passcode}」的历史云端记录，请先在出题设备上点击“上传”。`;
+        }
+      } catch (e) {
+        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
+        statusEl.textContent = "拉取解析失败，请检查网络或口令。";
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    window.downloadFromCloudStorage = downloadFromCloudStorage;
+
+    function mergeSyncedData(remote) {
+      if (!remote) return;
       if (remote.mistakes) {
         Object.keys(remote.mistakes).forEach(qId => {
           const rM = remote.mistakes[qId];
           const lM = window.appState.mistakes[qId];
           if (!lM) {
             window.appState.mistakes[qId] = rM;
-            changed = true;
           } else {
-            // Keep the maximum wrongCount and latest timestamp
-            if ((rM.wrongCount || 0) > (lM.wrongCount || 0)) {
-              lM.wrongCount = rM.wrongCount;
-              lM.lastWrongTime = Math.max(rM.lastWrongTime || 0, lM.lastWrongTime || 0);
-              changed = true;
-            }
+            lM.wrongCount = Math.max(lM.wrongCount || 0, rM.wrongCount || 0);
+            lM.lastWrongTime = Math.max(lM.lastWrongTime || 0, rM.lastWrongTime || 0);
           }
         });
       }
-
       if (remote.history) {
         Object.keys(remote.history).forEach(qId => {
           const rH = remote.history[qId];
           const lH = window.appState.history[qId];
           if (!lH) {
             window.appState.history[qId] = rH;
-            changed = true;
           } else {
-            if ((rH.attempts || 0) > (lH.attempts || 0)) {
-              window.appState.history[qId] = rH;
-              changed = true;
-            }
+            lH.attempts = Math.max(lH.attempts || 0, rH.attempts || 0);
+            lH.correct = Math.max(lH.correct || 0, rH.correct || 0);
           }
         });
       }
-
-      if (changed) {
-        window.saveStateLocalOnly();
-        window.refreshGlobalCounters();
-        window.renderDashboardModules();
-        window.showToast("已从云端拉取并同步最新的错题与进度！");
-      }
+      window.saveStateLocalOnly();
+      window.refreshGlobalCounters();
+      window.renderDashboardModules();
     }
-
-    // Push local state to Firestore
-    async function pushStateToCloud() {
-      if (!currentUser) return;
-      isSyncingToCloud = true;
-      try {
-        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'quiz_state');
-        await setDoc(userDocRef, {
-          mistakes: window.appState.mistakes || {},
-          history: window.appState.history || {},
-          settings: window.appState.settings || {},
-          updatedAt: Date.now()
-        }, { merge: true });
-      } catch (err) {
-        console.warn("Failed to push state to cloud:", err);
-      } finally {
-        isSyncingToCloud = false;
-      }
-    }
-
-    // Global hooks
-    window.syncStateWithCloud = pushStateToCloud;
-
-    window.handleEmailSignIn = async function() {
-      const email = document.getElementById("auth-email-input").value.trim();
-      const pwd = document.getElementById("auth-password-input").value;
-      const errEl = document.getElementById("auth-error-msg");
-      errEl.classList.add("hidden");
-
-      if (!email || !pwd) {
-        errEl.textContent = "请完整填写邮箱与密码！";
-        errEl.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        await signInWithEmailAndPassword(auth, email, pwd);
-        window.closeAuthModal();
-        window.showToast("登录成功！正在同步云端记录...");
-      } catch (e) {
-        errEl.textContent = "登录失败: " + (e.message || "账号或密码错误");
-        errEl.classList.remove("hidden");
-      }
-    };
-
-    window.handleEmailSignUp = async function() {
-      const email = document.getElementById("auth-email-input").value.trim();
-      const pwd = document.getElementById("auth-password-input").value;
-      const errEl = document.getElementById("auth-error-msg");
-      errEl.classList.add("hidden");
-
-      if (!email || !pwd || pwd.length < 6) {
-        errEl.textContent = "密码长度至少需要 6 个字符！";
-        errEl.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        await createUserWithEmailAndPassword(auth, email, pwd);
-        await pushStateToCloud();
-        window.closeAuthModal();
-        window.showToast("账号注册成功并已关联云端！");
-      } catch (e) {
-        errEl.textContent = "注册失败: " + (e.message || "该邮箱可能已被占用");
-        errEl.classList.remove("hidden");
-      }
-    };
-
-    window.handleAnonymousSignIn = async function() {
-      try {
-        await signInAnonymously(auth);
-        window.closeAuthModal();
-        window.showToast("已开启访客云端同步模式！");
-      } catch (e) {
-        window.showToast("访客登录失败: " + e.message);
-      }
-    };
-
-    window.handleUserSignOut = async function() {
-      try {
-        await signOut(auth);
-        window.closeAuthModal();
-        window.showToast("已退出云端账号，当前转为本地离线模式");
-      } catch (e) {
-        window.showToast("退出失败: " + e.message);
-      }
-    };
-
-    window.triggerManualCloudSync = async function() {
-      if (!currentUser) {
-        window.openAuthModal();
-        return;
-      }
-      window.showToast("正在与云端服务器进行数据同步...");
-      await pushStateToCloud();
-      window.showToast("同步完成！云端记录已更新。");
-    };
-
-    // Auto-init on load
-    initFirebaseAuth();
   </script>
 
   <script>

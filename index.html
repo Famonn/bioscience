@@ -350,7 +350,7 @@
           </div>
 
           <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>快捷键：数字键 1-4 选择，左右键切换</span>
+            <span>快捷键：数字键 1-4 选择，N 下一题，P/← 上一题</span>
             <button onclick="restartCurrentQuiz()" class="text-indigo-600 hover:underline font-medium">重新开始本组</button>
           </div>
         </div>
@@ -2489,14 +2489,16 @@
       if (!q) return;
       const isSubmitted = currentQuiz.sessionAnswers[q.id]?.submitted;
 
+      const keyLower = e.key.toLowerCase();
+
       if (!isSubmitted && ["1", "2", "3", "4"].includes(e.key)) {
         const idx = parseInt(e.key, 10) - 1;
         if (idx < q.options.length) {
           handleOptionClick(idx);
         }
-      } else if (e.key === "ArrowRight") {
+      } else if (e.key === "ArrowRight" || keyLower === "n") {
         nextQuestion();
-      } else if (e.key === "ArrowLeft") {
+      } else if (e.key === "ArrowLeft" || keyLower === "p") {
         prevQuestion();
       }
     });

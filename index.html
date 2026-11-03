@@ -312,29 +312,29 @@
               </div>
             </div>
 
-            <!-- English Clinical Rationale & Explanation Card -->
-            <div id="q-explanation-card" class="mt-3 p-4 rounded-xl bg-white/95 border border-slate-200/90 text-sm leading-relaxed space-y-3 shadow-xs">
+            <!-- Bilingual Question Translation & Simple Answer Explanation Card -->
+            <div id="q-explanation-card" class="mt-3 p-4 rounded-xl bg-white border border-slate-200 text-sm leading-relaxed space-y-4 shadow-xs text-slate-800">
               
-              <!-- Translation Section -->
-              <div>
-                <div class="font-bold text-indigo-900 flex items-center gap-1.5 border-b border-indigo-100 pb-1.5 mb-1.5 text-xs sm:text-sm">
-                  <i class="fa-solid fa-language text-indigo-500"></i>
-                  <span>题目中文参考大意 (Question Translation)</span>
+              <!-- 1. Question & Options Chinese Translation Section -->
+              <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100">
+                <div class="font-bold text-indigo-900 flex items-center gap-1.5 border-b border-indigo-200/70 pb-1.5 mb-2 text-xs sm:text-sm">
+                  <i class="fa-solid fa-language text-indigo-600"></i>
+                  <span>题目与选项中文翻译 (Chinese Translation)</span>
                 </div>
-                <p id="q-stem-zh-text" class="text-slate-600 pl-1 text-[13px] sm:text-sm">
+                <div id="q-stem-zh-text" class="text-slate-800 text-[13px] sm:text-sm space-y-1.5">
                   Translation text goes here...
-                </p>
+                </div>
               </div>
 
-              <!-- Rationale Section -->
-              <div>
-                <div class="font-bold text-amber-900 flex items-center gap-1.5 border-b border-amber-100 pb-1.5 mb-1.5 text-xs sm:text-sm">
+              <!-- 2. Simple Bilingual Answer Rationale Section -->
+              <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200/80">
+                <div class="font-bold text-amber-900 flex items-center gap-1.5 border-b border-amber-200/70 pb-1.5 mb-2 text-xs sm:text-sm">
                   <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                  <span>简易双语解析 (Bilingual Rationale)</span>
+                  <span>答案中英文简易解释 (Simple English & Chinese Explanation)</span>
                 </div>
-                <p id="q-explanation-text" class="text-slate-600 pl-1 text-[13px] sm:text-sm">
+                <div id="q-explanation-text" class="text-slate-800 text-[13px] sm:text-sm space-y-2">
                   Explanation text goes here...
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -2253,8 +2253,8 @@
           : letters[q.answer];
         const currentWrongCount = appState.mistakes[q.id]?.wrongCount || 0;
 
-        // Populate Translation and Explanation
-        document.getElementById("q-stem-zh-text").innerHTML = getRoughChineseTranslation(q.question);
+        // Populate Full Question + Options Chinese Translation & Simple Bilingual Explanation
+        document.getElementById("q-stem-zh-text").innerHTML = buildFullQuestionTranslationHTML(q);
         expText.innerHTML = getQuestionExplanation(q);
 
         if (sAns.isCorrect) {
@@ -2390,160 +2390,422 @@
     }
 
     // ============================================================================
-    // ENGLISH CLINICAL RATIONALE & EXPLANATION ENGINE
-    // Generates concise, high-yield English explanations for each question
+    // COMPREHENSIVE BILINGUAL TRANSLATION & SIMPLE EXPLANATION ENGINE
+    // Provides clear Chinese translation for questions/options + Simple EN/CN Answer Rationale
     // ============================================================================
-    
-    function getRoughChineseTranslation(text) {
-      let t = text;
-      // Stems
-      t = t.replace(/Which of the following is NOT/gi, "以下哪项**不是**");
-      t = t.replace(/Which of the following is/gi, "以下哪项是");
-      t = t.replace(/Which of the following/gi, "以下哪项");
-      t = t.replace(/What is the primary function of/gi, "主要功能是什么：");
-      t = t.replace(/What is the primary action of/gi, "主要药理作用是什么：");
-      t = t.replace(/What is the primary purpose of/gi, "主要目的是什么：");
-      t = t.replace(/What is the primary/gi, "主要是什么：");
-      t = t.replace(/What is the role of/gi, "作用是什么：");
-      t = t.replace(/Which type of/gi, "哪种类型的");
-      t = t.replace(/Which condition/gi, "哪种疾病/状况");
-      t = t.replace(/What is the most common cause of/gi, "最常见的原因是什么：");
-      t = t.replace(/Which medication is/gi, "哪种药物是");
-      t = t.replace(/Which drug is/gi, "哪种药物是");
-      t = t.replace(/What is a common symptom of/gi, "常见症状是什么：");
-      t = t.replace(/What is the term for/gi, "什么术语是指：");
-      t = t.replace(/Which of these/gi, "以下哪个");
 
-      // Core Keywords translation map
-      const dict = {
-        "immune system": "免疫系统",
-        "pathogens": "病原体",
-        "antibodies": "抗体",
-        "autoimmune": "自身免疫",
-        "inflammation": "炎症",
-        "rheumatoid arthritis": "类风湿性关节炎(RA)",
-        "osteoarthritis": "骨关节炎(OA)",
-        "blood pressure": "血压",
-        "blood glucose": "血糖",
-        "diabetes mellitus": "糖尿病",
-        "type 1 diabetes": "1型糖尿病",
-        "type 2 diabetes": "2型糖尿病",
-        "hypoglycaemia": "低血糖",
-        "hyperglycaemia": "高血糖",
-        "pharmacodynamics": "药效学",
-        "pharmacokinetics": "药代动力学",
-        "bioavailability": "生物利用度",
-        "first-pass metabolism": "首关效应(First-pass)",
-        "half-life": "半衰期",
-        "therapeutic index": "治疗指数",
-        "adverse drug reaction": "药物不良反应(ADR)",
-        "chronic kidney disease": "慢性肾脏病(CKD)",
-        "renal failure": "肾衰竭",
-        "heart failure": "心力衰竭",
-        "myocardial infarction": "心肌梗死(MI)",
-        "hypertension": "高血压",
-        "hypotension": "低血压",
-        "tachycardia": "心动过速",
-        "bradycardia": "心动过缓",
-        "cell membrane": "细胞膜",
-        "mitochondria": "线粒体",
-        "hypoxia": "缺氧",
-        "necrosis": "坏死",
-        "apoptosis": "细胞凋亡",
-        "opioid": "阿片类药物",
-        "analgesic": "镇痛药",
-        "neuropathic pain": "神经病理性疼痛",
-        "nociceptive pain": "伤害性疼痛",
-        "antibiotic": "抗生素",
-        "bacteria": "细菌",
-        "virus": "病毒",
-        "fungal": "真菌",
-        "allergic": "过敏",
-        "asthma": "哮喘",
-        "symptoms": "症状",
-        "treatment": "治疗",
-        "diagnosis": "诊断",
-        "patient": "患者",
-        "nurse": "护士",
-        "potassium": "钾(K)",
-        "sodium": "钠(Na)",
-        "calcium": "钙(Ca)",
-        "magnesium": "镁(Mg)",
-        "electrolyte": "电解质",
-        "fluid balance": "体液平衡",
-        "mental health": "心理健康",
-        "schizophrenia": "精神分裂症",
-        "depression": "抑郁症",
-        "anxiety": "焦虑症",
-        "insomnia": "失眠",
-        "benzodiazepines": "苯二氮卓类",
-        "nsaid": "非甾体抗炎药(NSAID)"
-      };
+    const MEDICAL_PHRASE_DICT = [
+      // Question stems & common patterns
+      ["Which of the following is NOT a primary function of", "以下哪项【不是】主要功能："],
+      ["Which of the following is NOT", "以下哪项【不是】"],
+      ["Which of the following is not", "以下哪项【不是】"],
+      ["Which factor is not", "以下哪个因素【不是】"],
+      ["Which factor does not", "以下哪个因素【不】"],
+      ["Which is not a typical characteristic of", "以下哪项【不是】典型特征："],
+      ["Which of the following best defines", "以下哪项最准确地定义了"],
+      ["Which of the following best describes", "以下哪项最准确地描述了"],
+      ["Which of the following is a hallmark of", "以下哪项是典型标志："],
+      ["Which of the following is a common symptom of", "以下哪项是常见症状："],
+      ["Which of the following is a common deformity in", "以下哪项是常见畸形："],
+      ["Which of the following is a consequence of", "以下哪项是导致的结果："],
+      ["Which of the following is a systemic manifestation of", "以下哪项是全身性表现："],
+      ["Which of the following is an example of", "以下哪项属于"],
+      ["Which of the following results in", "以下哪项会导致"],
+      ["Which of the following", "以下哪项"],
+      ["What is the primary function of", "主要功能是什么："],
+      ["What is the primary action of", "主要药理作用是什么："],
+      ["What is the primary purpose of", "主要目的是什么："],
+      ["What is the primary mechanism of", "主要作用机制是什么："],
+      ["What is the primary site for", "主要部位是哪里："],
+      ["What is the primary site of action for", "主要作用部位是哪里："],
+      ["What is the primary cellular response in", "主要细胞反应是什么："],
+      ["What is the earliest cellular effect of", "最早期的细胞影响是什么："],
+      ["What is the main feature of", "主要特征是什么："],
+      ["What is the main site of", "主要部位是："],
+      ["What is the role of", "作用/角色是什么："],
+      ["What is the function of", "功能是什么："],
+      ["What is the difference between", "区别是什么："],
+      ["What is meant by", "是指什么意思："],
+      ["What is the term for", "以下哪种情况被称为："],
+      ["What is a major side effect of", "主要副作用是什么："],
+      ["What is a common side effect of", "常见副作用是什么："],
+      ["What is a serious risk of", "严重风险是什么："],
+      ["What is the most common cause of", "最常见的原因是什么："],
+      ["What is the most common type of", "最常见的类型是："],
+      ["Which type of immune cell", "哪种免疫细胞"],
+      ["Which immune cells", "哪种免疫细胞"],
+      ["Which organelle is known as", "哪个细胞器被称为"],
+      ["Which organelle", "哪个细胞器"],
+      ["Which immunoglobulin", "哪种免疫球蛋白(抗体)"],
+      ["Which medication", "哪种药物"],
+      ["Which drug class", "哪类药物"],
+      ["Which class of drugs", "哪类药物"],
+      ["Which drug", "哪种药物"],
+      ["Which hormone", "哪种激素"],
+      ["Which electrolyte", "哪种电解质"],
+      ["Which condition", "哪种疾病/状况"],
+      ["Which organ", "哪个器官"],
+      ["select all that apply", "【多选题：选择所有正确项】"],
 
-      for (const [eng, zh] of Object.entries(dict)) {
-        const regex = new RegExp(`\\b${eng}\\b`, "gi");
-        t = t.replace(regex, `<span class="text-indigo-600 font-semibold underline decoration-indigo-200 underline-offset-2">${zh}</span>`);
+      // High-frequency medical terms & options
+      ["Digesting food", "消化食物"],
+      ["Defending against pathogens", "防御病原体"],
+      ["Removing damaged cells", "清除受损细胞"],
+      ["Maintaining tissue homeostasis", "维持组织稳态"],
+      ["Immunodeficiency", "免疫缺陷"],
+      ["Autoimmunity", "自身免疫"],
+      ["autoimmune diseases", "自身免疫性疾病"],
+      ["Autoimmune destruction of beta cells", "胰岛β细胞的自身免疫性破坏"],
+      ["Allergy", "过敏"],
+      ["allergic reactions", "过敏反应"],
+      ["allergic rhinitis", "过敏性鼻炎"],
+      ["producing antibodies", "产生抗体"],
+      ["Produce antibodies", "产生抗体"],
+      ["Antibody production", "产生抗体"],
+      ["B cells", "B细胞(B淋巴细胞)"],
+      ["B lymphocytes", "B淋巴细胞"],
+      ["T cells", "T细胞(T淋巴细胞)"],
+      ["helper T cells", "辅助性T细胞(Th)"],
+      ["cytotoxic T cells", "细胞毒性T细胞(Tc)"],
+      ["Natural killer cells", "自然杀伤细胞(NK细胞)"],
+      ["Macrophages", "巨噬细胞"],
+      ["Neutrophils", "中性粒细胞"],
+      ["Neutrophil infiltration", "中性粒细胞浸润"],
+      ["Eosinophils", "嗜酸性粒细胞"],
+      ["Basophils", "嗜碱性粒细胞"],
+      ["Dendritic cells", "树突状细胞"],
+      ["Mast cells", "肥大细胞"],
+      ["Coordinate the immune response", "协调免疫应答"],
+      ["Kill infected cells", "杀伤被感染的细胞"],
+      ["Frequent infections", "频繁感染"],
+      ["Reduce inflammation", "减轻炎症"],
+      ["Rheumatoid arthritis", "类风湿性关节炎(RA)"],
+      ["Osteoarthritis", "骨关节炎(OA)"],
+      ["Ankylosing spondylitis", "强直性脊柱炎"],
+      ["Psoriatic arthritis", "银屑病关节炎"],
+      ["Gout", "痛风"],
+      ["Thymus", "胸腺"],
+      ["Spleen", "脾脏"],
+      ["Lymph nodes", "淋巴结"],
+      ["Bone marrow", "骨髓"],
+      ["Tuberculosis", "结核病(TB)"],
+      ["Blood and bodily fluids", "血液和体液"],
+      ["Skin rashes", "皮疹"],
+      ["Cell-mediated immunity", "细胞免疫"],
+      ["Humoral immunity", "体液免疫"],
+      ["Innate immunity", "先天性(固有)免疫"],
+      ["Apoptosis", "细胞凋亡(程序性细胞死亡)"],
+      ["Necrosis", "细胞坏死"],
+      ["Coagulative necrosis", "凝固性坏死"],
+      ["Liquefactive necrosis", "液化性坏死"],
+      ["Caseous necrosis", "干酪样坏死"],
+      ["Fat necrosis", "脂肪坏死"],
+      ["Tachycardia", "心动过速(心率快)"],
+      ["Bradycardia", "心动过缓(心率慢)"],
+      ["Vasodilation", "血管舒张/扩张"],
+      ["Vasoconstriction", "血管收缩"],
+      ["respiratory acidosis", "呼吸性酸中毒"],
+      ["respiratory alkalosis", "呼吸性碱中毒"],
+      ["metabolic acidosis", "代谢性酸中毒"],
+      ["metabolic alkalosis", "代谢性碱中毒"],
+      ["Erythropoietin", "促红细胞生成素(EPO)"],
+      ["Nausea", "恶心"],
+      ["Cyanosis", "发绀(皮肤青紫)"],
+      ["Idiopathic", "特发性(原因不明的)"],
+      ["Pulmonary edema", "肺水肿"],
+      ["hemolytic anemia", "溶血性贫血"],
+      ["Homeostasis", "内环境稳态"],
+      ["Mitochondrion", "线粒体"],
+      ["Mitochondria", "线粒体"],
+      ["Ribosome", "核糖体"],
+      ["Ribosomes", "核糖体"],
+      ["Protein synthesis", "蛋白质合成"],
+      ["Phospholipids and proteins", "磷脂和蛋白质"],
+      ["Golgi apparatus", "高尔基体"],
+      ["Lysosome", "溶酶体"],
+      ["Nucleus", "细胞核"],
+      ["Stores genetic material", "储存遗传物质"],
+      ["Smooth endoplasmic reticulum", "滑面内质网"],
+      ["Rough endoplasmic reticulum", "粗面内质网"],
+      ["Cytoskeleton", "细胞骨架"],
+      ["Cytosol", "细胞质基质"],
+      ["Decreased ATP production", "ATP生成减少"],
+      ["Failure of sodium-potassium pumps", "钠钾泵衰竭"],
+      ["Accumulation of lactic acid", "乳酸堆积"],
+      ["Hydropic swelling", "水肿变性(细胞肿胀)"],
+      ["Cellular swelling", "细胞肿胀"],
+      ["Reactive oxygen species", "活性氧(ROS)"],
+      ["Duration and severity of the insult", "损伤的持续时间和严重程度"],
+      ["Fatty liver (steatosis)", "脂肪肝(脂肪变性)"],
+      ["Potency", "效价强度(Potency)"],
+      ["Selectivity", "选择性(Selectivity)"],
+      ["Specificity", "特异性(Specificity)"],
+      ["Efficacy", "最大效能(Efficacy)"],
+      ["Affinity", "亲和力(Affinity)"],
+      ["Pharmacodynamics", "药效学(药物对身体的作用)"],
+      ["Pharmacokinetics", "药代动力学(身体对药物的处置)"],
+      ["What drugs do to the body", "药物对机体产生的作用"],
+      ["Wide safety margin", "安全范围宽(安全性高)"],
+      ["Narrow safety margin", "安全范围窄"],
+      ["therapeutic index", "治疗指数(TI)"],
+      ["Adverse drug reaction (ADR)", "药物不良反应(ADR)"],
+      ["Full agonist", "完全激动剂"],
+      ["Partial agonist", "部分激动剂"],
+      ["Inverse agonists", "反向激动剂"],
+      ["Competitive antagonists", "竞争性拮抗剂"],
+      ["Agonist", "激动剂(激活受体)"],
+      ["Antagonist", "拮抗剂(阻断受体)"],
+      ["Binds and blocks receptor activity", "结合并阻断受体活性"],
+      ["Bioavailability", "生物利用度"],
+      ["Fraction of administered dose reaching systemic circulation", "进入全身血液循环的药物剂量比例"],
+      ["Over the counter", "非处方药(OTC)"],
+      ["Absorption", "吸收"],
+      ["Distribution", "分布"],
+      ["Metabolism", "代谢"],
+      ["Elimination", "消除"],
+      ["Excretion", "排泄"],
+      ["Small intestine", "小肠"],
+      ["first-pass metabolism", "首关消除(首过代谢)"],
+      ["First-pass effect", "首关效应"],
+      ["half-life", "半衰期(t1/2)"],
+      ["Time taken for plasma concentration to reduce by half", "血药浓度下降一半所需的时间"],
+      ["Sublingual", "舌下含服"],
+      ["Intravenous (IV)", "静脉注射(IV)"],
+      ["Albumin", "白蛋白"],
+      ["Passive diffusion", "被动扩散"],
+      ["Hepatic failure", "肝功能衰竭"],
+      ["Renal impairment", "肾功能受损"],
+      ["Polypharmacy", "多重用药(同时用多种药)"],
+      ["4-5 half-lives", "4~5个半衰期"],
+      ["Sympathetic nervous system", "交感神经系统"],
+      ["Parasympathetic system", "副交感神经系统"],
+      ["beta-blockers", "β受体阻滞剂"],
+      ["Inhibit cholesterol synthesis", "抑制胆固醇合成"],
+      ["Anticoagulants", "抗凝血药"],
+      ["Platelets", "血小板"],
+      ["Thinning respiratory secretions", "稀释呼吸道分泌物(化痰)"],
+      ["Antihistamines", "抗组胺药"],
+      ["proton pump inhibitors (PPI)", "质子泵抑制剂(PPI，抑酸药)"],
+      ["Neutralising stomach acid", "中和胃酸"],
+      ["Antiemetic", "止吐药"],
+      ["Laxative", "泻药"],
+      ["Electrolyte imbalance", "电解质紊乱"],
+      ["Adrenal cortex", "肾上腺皮质"],
+      ["diabetic ketoacidosis (DKA)", "糖尿病酮症酸中毒(DKA)"],
+      ["Hyperosmolar hyperglycaemic state (HHS)", "高渗性高血糖状态(HHS)"],
+      ["Hypoglycaemia", "低血糖"],
+      ["Hyperglycaemia", "高血糖"],
+      ["Polydipsia, polyuria, polyphagia", "多饮、多尿、多食(三多症状)"],
+      ["Polyphagia and polyuria", "多食与多尿"],
+      ["Insulin glargine", "甘精胰岛素(长效)"],
+      ["Insulin aspart", "门冬胰岛素(超短效/速效)"],
+      ["Insulin lispro", "赖脯胰岛素(速效)"],
+      ["Inhibits gluconeogenesis", "抑制肝糖原异生"],
+      ["Stimulating insulin release", "刺激胰岛素分泌"],
+      ["Microalbuminuria", "微量白蛋白尿"],
+      ["Retinopathy", "视网膜病变"],
+      ["Nephropathy", "肾病"],
+      ["Neuropathy", "神经病变"],
+      ["Polyneuropathy", "多发性神经病变"],
+      ["Prevent lipodystrophy", "预防脂肪营养不良(皮下脂肪增生或萎缩)"],
+      ["Inhibit prostaglandin synthesis", "抑制前列腺素合成"],
+      ["Inhibit cyclooxygenase (COX) enzymes", "抑制环氧化酶(COX)"],
+      ["Somatic nociceptive pain", "躯体伤害性疼痛"],
+      ["Neuropathic pain", "神经病理性疼痛"],
+      ["Visceral pain", "内脏痛"],
+      ["Referred pain", "牵涉痛"],
+      ["Phantom pain", "幻肢痛"],
+      ["Breakthrough pain", "爆发痛"],
+      ["Allodynia", "异常性疼痛(非痛刺激引起疼痛)"],
+      ["Hyperalgesia", "痛觉过敏(对痛觉反应过度)"],
+      ["Naloxone", "纳洛酮(阿片类解毒药)"],
+      ["Constipation", "便秘"],
+      ["Gastric ulceration", "胃溃疡"],
+      ["Gastric ulcers", "胃溃疡"],
+      ["Liver failure", "肝衰竭"],
+      ["Hepatotoxicity", "肝毒性"],
+      ["Nephrotoxicity", "肾毒性"],
+      ["Anticonvulsants", "抗惊厥药(如加巴喷丁，治神经痛)"],
+      ["Substantia gelatinosa", "脊髓胶状质(疼痛闸门所在处)"],
+      ["Patient self-report", "患者自我报告(评估疼痛金标准)"],
+      ["Minimum inhibitory concentration (MIC)", "最低抑菌浓度(MIC)"],
+      ["superinfection", "二重感染(菌群失调引起的继发感染)"],
+      ["Empiric therapy", "经验性治疗(培养结果出来前广谱用药)"],
+      ["Prophylactic", "预防性用药"],
+      ["Directed therapy", "目标性治疗(根据药敏结果用药)"],
+      ["Tendon rupture", "肌腱断裂(氟喹诺酮类副作用)"],
+      ["Synovial membrane", "滑膜"],
+      ["Morning stiffness lasting longer than 30 minutes", "晨僵持续超过30分钟"],
+      ["Symmetrical involvement", "对称性关节受累"],
+      ["Low-purine diet", "低嘌呤饮食"],
+      ["Accumulation of uric acid crystals", "尿酸结晶沉积"],
+      ["Colchicine", "秋水仙碱"],
+      ["Allopurinol", "别嘌醇"],
+      ["Methotrexate", "甲氨蝶呤"],
+      ["Retinal toxicity", "视网膜毒性(羟氯喹副作用)"],
+      ["Adrenal insufficiency", "肾上腺皮质功能不全"],
+      ["Flumazenil", "氟马西尼(苯二氮卓类解毒剂)"],
+      ["Sleep hygiene", "睡眠卫生"],
+      ["Dependence", "药物依赖性"],
+      ["Tolerance", "耐受性"],
+      ["Hypocalcemia", "低钙血症"],
+      ["Hyperkalemia", "高钾血症"],
+      ["Hypokalemia", "低钾血症"],
+      ["Hyponatremia", "低钠血症"],
+      ["Hypernatremia", "高钠血症"],
+      ["Hypovolemia", "低血容量"],
+      ["Edema", "水肿"],
+      ["Administering calcium gluconate", "静脉注射葡萄糖酸钙(保护心肌)"],
+      ["Restricting fluid intake", "限制液体摄入"],
+      ["Filtration of blood", "过滤血液"],
+      ["Kidney transplantation", "肾移植"]
+    ];
+
+    function translateTextToChinese(engText) {
+      if (!engText) return "";
+      let res = engText;
+      for (const [en, zh] of MEDICAL_PHRASE_DICT) {
+        const escaped = en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const rgx = new RegExp(escaped, "gi");
+        if (rgx.test(res)) {
+          res = res.replace(rgx, `${en} <span class="text-indigo-700 font-semibold">【${zh}】</span>`);
+        }
       }
-      return t;
+      return res;
+    }
+
+    function buildFullQuestionTranslationHTML(q) {
+      const letters = ["A", "B", "C", "D"];
+      const stemTrans = translateTextToChinese(q.question);
+      const correctIndices = q.isMulti ? q.answer : [q.answer];
+
+      const optsHtml = q.options.map((opt, idx) => {
+        const isCorr = correctIndices.includes(idx);
+        const optTrans = translateTextToChinese(opt);
+        return `
+          <div class="py-1 px-2.5 rounded-lg text-xs ${isCorr ? 'bg-emerald-100/90 text-emerald-950 font-bold border border-emerald-300' : 'text-slate-600'}">
+            <span class="font-mono mr-1">${letters[idx]}.</span> ${optTrans}
+            ${isCorr ? `<span class="ml-1.5 text-emerald-700">✓【正确项】</span>` : ""}
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="font-semibold text-slate-900 leading-relaxed mb-2">
+          <span class="px-1.5 py-0.5 bg-indigo-600 text-white rounded text-[11px] mr-1.5">题干</span>
+          ${stemTrans}
+        </div>
+        <div class="grid grid-cols-1 gap-1 pt-1">
+          ${optsHtml}
+        </div>
+      `;
     }
 
     function getQuestionExplanation(q) {
       const letters = ["A", "B", "C", "D"];
-      let correctAnswersText = "";
-      if (q.isMulti) {
-        correctAnswersText = q.answer.map(i => `<strong>${letters[i]}) ${q.options[i]}</strong>`).join(" and ");
-      } else {
-        correctAnswersText = `<strong>${letters[q.answer]}) ${q.options[q.answer]}</strong>`;
-      }
+      const correctIndices = q.isMulti ? q.answer : [q.answer];
+      const correctEnStr = correctIndices.map(i => `${letters[i]}) ${q.options[i]}`).join(" & ");
+      const correctZhStr = correctIndices.map(i => `${letters[i]}) ${translateTextToChinese(q.options[i])}`).join(" ； ");
 
       const textLower = (q.question + " " + q.options.join(" ")).toLowerCase();
+      let enExp = "";
+      let zhExp = "";
 
-      // Targeted high-yield rationale rules (Simplified Bilingual)
-      if (textLower.includes("first-pass metabolism") || textLower.includes("first pass")) {
-        return `First-pass metabolism reduces oral drug bioavailability before systemic circulation.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 首关效应会显著降低口服药物的生物利用度，因为药物在进入全身血液前已被肝脏代谢。`;
-      }
-      if (textLower.includes("half-life") || textLower.includes("steady state")) {
-        return `Steady-state concentration predictably takes 4 to 5 half-lives.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 药物达到稳态浓度（Steady-state）通常需要 4 到 5 个半衰期。`;
-      }
-      if (textLower.includes("therapeutic index")) {
-        return `A narrow therapeutic index (TI) demands strict therapeutic drug monitoring (TDM).<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 治疗指数（TI）越窄，越需要严格的药物浓度监测以防中毒。`;
-      }
-      if (textLower.includes("dka") || textLower.includes("ketoacidosis") || textLower.includes("fruity breath")) {
-        return `In DKA, absolute insulin deficiency causes lipolysis into ketones. Acetone expiration leads to fruity breath.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 糖尿病酮症酸中毒(DKA)中，胰岛素绝对缺乏导致脂肪分解产生酮体，呼出气体有烂苹果味。`;
-      }
-      if (textLower.includes("hhs") || textLower.includes("hyperosmolar")) {
-        return `HHS features extreme hyperglycaemia without significant ketoacidosis, common in Type 2 diabetes.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 高渗性高血糖综合征(HHS)多见于2型糖尿病，特征是极度高血糖脱水，但无明显酮症酸中毒。`;
-      }
-      if (textLower.includes("metformin")) {
-        return `Metformin decreases hepatic glucose production with low risk of hypoglycaemia.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 二甲双胍主要通过减少肝糖原生成降糖，单独使用极少引起低血糖。`;
-      }
-      if (textLower.includes("nsaid") || textLower.includes("prostaglandin") || textLower.includes("cyclooxygenase")) {
-        return `NSAIDs inhibit COX enzymes, reducing prostaglandins. A key adverse effect is GI ulceration.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> NSAIDs（如布洛芬）通过抑制COX酶减少前列腺素，最常见副作用是胃肠道溃疡或出血。`;
-      }
-      if (textLower.includes("opioid") || textLower.includes("naloxone") || textLower.includes("morphine")) {
-        return `Opioids inhibit CNS pain signals. Naloxone is used to reverse respiratory depression in overdose.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 阿片类药物抑制中枢疼痛信号。纳洛酮（Naloxone）是其特异性解毒剂，用于抢救呼吸抑制。`;
-      }
-      if (textLower.includes("gaba") || textLower.includes("benzodiazepine") || textLower.includes("flumazenil")) {
-        return `Benzodiazepines enhance GABA-mediated CNS inhibition. Flumazenil is the specific antagonist.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 苯二氮卓类药物增强GABA的抑制作用（镇静催眠）。氟马西尼（Flumazenil）是其解毒剂。`;
-      }
-      if (textLower.includes("methotrexate") || textLower.includes("folic acid")) {
-        return `Methotrexate is a DMARD for RA. Folic acid is co-prescribed to mitigate toxicity.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 甲氨蝶呤(MTX)是治类风湿首选药，常同服叶酸以减轻胃肠和肝脏毒性。`;
-      }
-      if (textLower.includes("gout") || textLower.includes("uric acid") || textLower.includes("colchicine") || textLower.includes("allopurinol")) {
-        return `Gout involves uric acid crystals. Colchicine treats acute flares; allopurinol prevents them.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 痛风由尿酸结晶引起。秋水仙碱治急性发作，别嘌醇用于日常预防降尿酸。`;
-      }
-      if (textLower.includes("hypokalemia") || textLower.includes("hyperkalemia") || textLower.includes("potassium")) {
-        return `Potassium imbalances risk lethal cardiac arrhythmias. Acute hyperkalemia is treated with IV calcium gluconate.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 钾离子紊乱极易引发致命心律失常。严重高钾血症需静脉推注葡萄糖酸钙保护心肌。`;
-      }
-      if (textLower.includes("beta-lactam") || textLower.includes("penicillin") || textLower.includes("cell wall")) {
-        return `Beta-lactams inhibit bacterial cell wall synthesis by binding to PBPs.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> β-内酰胺类抗生素（如青霉素）通过破坏细菌细胞壁合成来杀菌。`;
-      }
-      if (textLower.includes("ckd") || textLower.includes("gfr") || textLower.includes("creatinine")) {
-        return `CKD is staged by GFR. Stage 5 (<15 mL/min) requires renal replacement therapy.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 慢性肾病(CKD)由肾小球滤过率(GFR)分期。5期（<15）需要透析或肾移植。`;
+      // Comprehensive topic-specific bilingual rationales across all 710 questions
+      if (textLower.includes("digesting food") && textLower.includes("immune")) {
+        enExp = "The immune system defends against pathogens, clears damaged cells, and maintains homeostasis. Digesting food is the function of the gastrointestinal system.";
+        zhExp = "免疫系统的核心功能是防御病原体、清除受损细胞和维持稳态；“消化食物”属于消化系统的功能，不属于免疫系统。";
+      } else if (textLower.includes("autoimmun")) {
+        enExp = "Autoimmunity occurs when the immune system loses self-tolerance and attacks the body's own healthy tissues (e.g., Rheumatoid Arthritis, SLE, Type 1 Diabetes). Immunosuppressants reduce this abnormal inflammation.";
+        zhExp = "自身免疫（Autoimmunity）是指免疫系统错误地攻击自身正常组织（如类风湿关节炎、红斑狼疮、1型糖尿病），治疗上常使用免疫抑制剂来减轻炎症反应。";
+      } else if (textLower.includes("b cell") || textLower.includes("b-cell") || textLower.includes("b lymphocytes") || textLower.includes("antibodies")) {
+        enExp = "B lymphocytes (B cells) differentiate into plasma cells to produce antibodies (immunoglobulins) for humoral immunity and long-term memory.";
+        zhExp = "B淋巴细胞（B cells）负责体液免疫，分化为浆细胞后能够产生特异性抗体（Antibodies）并形成长期免疫记忆。";
+      } else if (textLower.includes("ige") || (textLower.includes("immunoglobulin") && textLower.includes("allerg"))) {
+        enExp = "IgE binds to mast cells and basophils, triggering histamine release during Type I hypersensitivity (allergic) reactions. IgG is the most abundant antibody in blood, IgA protects mucosal surfaces, and IgM is the first antibody produced in acute infection.";
+        zhExp = "抗体速记：IgE 与过敏反应（I型超敏反应）相关；IgG 是血液中含量最多的抗体；IgA 负责黏膜免疫（如母乳、呼吸道）；IgM 是急性感染时最早产生的抗体。";
+      } else if (textLower.includes("helper t") || textLower.includes("cytotoxic t") || textLower.includes("nk") || textLower.includes("natural killer")) {
+        enExp = "Helper T cells (CD4+) coordinate the immune response; Cytotoxic T cells (CD8+) and NK cells directly kill virus-infected or abnormal/cancerous cells. HIV specifically targets CD4+ T cells.";
+        zhExp = "辅助性T细胞（Helper T）负责协调指挥免疫应答（也是HIV主要攻击的靶细胞）；细胞毒性T细胞（Cytotoxic T）和自然杀伤细胞（NK）负责直接杀灭被病毒感染的细胞或肿瘤细胞。";
+      } else if (textLower.includes("neutrophil")) {
+        enExp = "Neutrophils are the most abundant WBCs and are the first responders to acute bacterial inflammation and wound infection via chemotaxis and phagocytosis.";
+        zhExp = "中性粒细胞（Neutrophils）是急性炎症和伤口感染时最先到达现场（First responders）的免疫白细胞。";
+      } else if (textLower.includes("macrophage") || textLower.includes("monocyte") || textLower.includes("phagocyt") || textLower.includes("dendritic")) {
+        enExp = "Macrophages and dendritic cells engulf pathogens/debris (phagocytosis) and act as antigen-presenting cells (APCs) to activate T-cells, bridging innate and adaptive immunity.";
+        zhExp = "巨噬细胞（Macrophages）和树突状细胞（Dendritic cells）负责吞噬病原体与坏死碎片，并将抗原呈递给T细胞，连接先天免疫与适应性免疫。";
+      } else if (textLower.includes("apoptosis") || textLower.includes("necrosis") || textLower.includes("coagulative")) {
+        enExp = "Apoptosis is programmed cell death without inflammation. Necrosis is irreversible pathological cell death with inflammation. Coagulative necrosis is typical of hypoxic injury/infarction in solid organs (like the heart).";
+        zhExp = "细胞凋亡（Apoptosis）是不引起炎症的程序性死亡；细胞坏死（Necrosis）是不可逆损伤并伴随炎症。心梗等实质器官缺血缺氧通常导致凝固性坏死（Coagulative necrosis）。";
+      } else if (textLower.includes("hypoxi") || textLower.includes("atp") || textLower.includes("hydropic") || textLower.includes("reversible")) {
+        enExp = "Hypoxia first hits mitochondria, decreasing ATP production. Low ATP causes Na+/K+ pump failure, leading to water/Na+ influx (cellular/hydropic swelling—a hallmark of reversible injury) and anaerobic glycolysis (lactic acid buildup). Severe/prolonged insult causes nuclear pyknosis/karyorrhexis (irreversible).";
+        zhExp = "缺氧（Hypoxia）首先影响线粒体导致 ATP 减少 → 钠钾泵失效 → 水钠内流引起细胞水肿（Hydropic swelling，可逆性损伤的标志）以及无氧酵解产生乳酸。若细胞核固缩碎裂或线粒体崩溃则变为不可逆损伤。";
+      } else if (textLower.includes("anatomical") || textLower.includes("medial") || textLower.includes("proximal") || textLower.includes("distal") || textLower.includes("sagittal")) {
+        enExp = "Standard anatomical position has palms facing forward. Medial = toward midline; Proximal = closer to trunk/origin; Distal = farther from trunk; Sagittal plane divides body into left and right.";
+        zhExp = "解剖学术语：标准解剖姿势手掌朝前（Forward）；Medial 指靠近正中线；Proximal 指近端（靠近躯干根部）；Distal 指远端；Sagittal（矢状面）将身体分为左右两部分。";
+      } else if (textLower.includes("mitochondri") || textLower.includes("ribosome") || textLower.includes("golgi") || textLower.includes("lysosome") || textLower.includes("endoplasmic")) {
+        enExp = "Mitochondria produce ATP (powerhouse); Ribosomes synthesize proteins; Golgi modifies and packages proteins; Lysosomes contain digestive enzymes; Smooth ER detoxifies drugs and synthesizes lipids.";
+        zhExp = "细胞器功能：线粒体（Mitochondria）产能ATP；核糖体（Ribosomes）合成蛋白质；高尔基体（Golgi）修饰打包蛋白质；溶酶体（Lysosome）含消化酶分解废物；滑面内质网解毒并代谢脂质。";
+      } else if (textLower.includes("potency") || textLower.includes("efficacy") || textLower.includes("selectivity") || textLower.includes("specificity") || textLower.includes("affinity")) {
+        enExp = "Affinity = ability to bind a receptor; Potency = amount/dose needed for an effect; Efficacy (Emax) = maximum response achievable; Selectivity = targeting specific receptors/tissues to minimize side effects.";
+        zhExp = "药理核心概念：Affinity（亲和力）指药物与受体结合的能力；Potency（效价）指产生效应所需的剂量大小；Efficacy（效能/Emax）指能达到的最大效应；Selectivity（选择性）指只针对特定受体作用。";
+      } else if (textLower.includes("agonist") || textLower.includes("antagonist") || textLower.includes("upregulation") || textLower.includes("downregulation") || textLower.includes("desensitisation")) {
+        enExp = "Agonists bind and activate receptors (Full = maximal response; Partial = sub-maximal response). Antagonists bind and block receptors. Chronic agonist exposure causes receptor desensitisation/downregulation; chronic antagonist exposure causes upregulation.";
+        zhExp = "激动剂（Agonist）激活受体产生效应；拮抗剂（Antagonist）阻断受体。长期使用激动剂会导致受体脱敏/下调（Downregulation，药效减弱）；长期使用拮抗剂会导致受体上调（Upregulation）。";
+      } else if (textLower.includes("first-pass") || textLower.includes("bioavailability") || textLower.includes("absorption") || textLower.includes("distribution") || textLower.includes("albumin")) {
+        enExp = "Absorption moves drug into blood (mainly in small intestine due to large surface area). Oral drugs undergo liver first-pass metabolism, reducing bioavailability. IV route gives 100% bioavailability. Albumin binds drugs in plasma (bound drug is inactive).";
+        zhExp = "药代动力学：小肠因表面积大是主要吸收部位；口服药经肝脏“首关效应（First-pass）”会降低生物利用度，舌下含服或静脉注射（IV，生物利用度100%）可避开首关效应。血浆中白蛋白（Albumin）结合的药物暂时无活性。";
+      } else if (textLower.includes("half-life") || textLower.includes("steady state") || textLower.includes("steady-state") || textLower.includes("clearance") || textLower.includes("therapeutic index")) {
+        enExp = "Half-life (t1/2) is the time for plasma drug concentration to drop by 50% and determines dosing interval. Reaching steady state takes 4–5 half-lives. Narrow therapeutic index (TD50/ED50) means small safety margin, requiring close monitoring.";
+        zhExp = "半衰期（Half-life）是血药浓度减半的时间，决定了给药间隔；达到稳态血药浓度（Steady state）需要 4~5 个半衰期。治疗指数（TI）窄的药物安全范围小，必须严密监测血药浓度。";
+      } else if (textLower.includes("dka") || textLower.includes("ketoacidosis") || textLower.includes("hhs") || textLower.includes("hyperosmolar") || textLower.includes("fruity")) {
+        enExp = "DKA (common in Type 1 DM) features hyperglycaemia, ketonaemia, metabolic acidosis, Kussmaul respirations, and fruity acetone breath. HHS (common in Type 2 DM) has extreme hyperglycaemia and severe dehydration WITHOUT significant ketones.";
+        zhExp = "DKA（酮症酸中毒，多见于1型）特征是高血糖、高酮体、代谢性酸中毒、深快呼吸和烂苹果味（丙酮Acetone）；HHS（高渗状态，多见于2型）特征是极高血糖和严重脱水，但【无明显酮症】。";
+      } else if (textLower.includes("insulin") || textLower.includes("glargine") || textLower.includes("aspart") || textLower.includes("lispro") || textLower.includes("glucagon") || textLower.includes("beta cell")) {
+        enExp = "Pancreatic Beta cells secrete insulin (lowers BGL); Alpha cells secrete glucagon (raises BGL in severe hypoglycaemia). Rapid-acting insulins (aspart, lispro) are given right before meals; Long-acting (glargine) provides basal coverage. Rotate injection sites to prevent lipodystrophy.";
+        zhExp = "胰岛β细胞分泌胰岛素（降糖），α细胞分泌胰高血糖素（Glucagon，用于抢救严重低血糖）。速效胰岛素（门冬Aspart、赖脯Lispro）餐前注射；长效胰岛素（甘精Glargine）提供基础胰岛素。轮换注射部位可防皮下脂肪增生或萎缩。";
+      } else if (textLower.includes("metformin") || textLower.includes("sulfonylurea") || textLower.includes("dapagliflozin") || textLower.includes("sitagliptin") || textLower.includes("pioglitazone") || textLower.includes("hba1c")) {
+        enExp = "HbA1c reflects 3-month glucose control (target <7%). Metformin inhibits hepatic gluconeogenesis (take with meals, risk of lactic acidosis, no hypoglycaemia). Sulfonylureas stimulate insulin release (risk of hypoglycaemia). SGLT2 inhibitors (dapagliflozin) block renal glucose reabsorption.";
+        zhExp = "HbA1c 反映过去 3 个月血糖水平（目标<7%）。二甲双胍（Metformin）抑制肝糖原异生，随餐服，罕见乳酸性酸中毒；磺脲类刺激胰岛素分泌（易致低血糖）；达格列净（Dapagliflozin）抑制肾小管重吸收葡萄糖。";
+      } else if (textLower.includes("nsaid") || textLower.includes("ibuprofen") || textLower.includes("celecoxib") || textLower.includes("paracetamol") || textLower.includes("aspirin")) {
+        enExp = "NSAIDs inhibit COX enzymes to block prostaglandin synthesis (relieving somatic/inflammatory pain), but risk GI ulcers, bleeding, and renal impairment. COX-2 selective drugs (celecoxib) have lower GI ulcer risk. Paracetamol is first-line for mild pain and safe in pregnancy, but overdose causes liver failure.";
+        zhExp = "NSAIDs（如布洛芬）通过抑制 COX 酶减少前列腺素来抗炎镇痛，主要副作用是胃溃疡出血和肾损伤；选择性 COX-2 抑制剂（塞来昔布）胃肠道更安全。扑热息痛（Paracetamol）无抗炎作用，过量会导致严重肝衰竭。";
+      } else if (textLower.includes("opioid") || textLower.includes("morphine") || textLower.includes("fentanyl") || textLower.includes("buprenorphine") || textLower.includes("naloxone") || textLower.includes("tramadol")) {
+        enExp = "Opioids (morphine, fentanyl) act on mu (μ) receptors to inhibit pain transmission. Common side effects include constipation and respiratory depression. Naloxone is the opioid antagonist used to reverse overdose. Buprenorphine is a partial agonist.";
+        zhExp = "阿片类药物（吗啡、芬太尼）激动 μ 受体强效镇痛，常见副作用是便秘，严重中毒会导致呼吸抑制，必须立即用纳洛酮（Naloxone）拮抗抢救。丁丙诺啡（Buprenorphine）属于部分激动剂。";
+      } else if (textLower.includes("pain") || textLower.includes("nocicept") || textLower.includes("allodynia") || textLower.includes("gate") || textLower.includes("neuropathic")) {
+        enExp = "Nociceptive pain arises from tissue damage (A-delta = fast sharp pain; C-fibers = slow dull pain). Neuropathic pain (burning/shooting) comes from nerve damage and responds best to anticonvulsants (gabapentin/pregabalin) or TCAs. Patient self-report is the gold standard for pain assessment.";
+        zhExp = "疼痛机制：A-δ纤维传导快而尖锐的痛，C纤维传导慢而弥散的痛；疼痛闸门位于脊髓胶状质（Substantia gelatinosa）。神经痛呈烧灼/电击样，首选抗惊厥药（普瑞巴林等）。患者自我报告是评估疼痛的金标准。";
+      } else if (textLower.includes("antibiotic") || textLower.includes("penicillin") || textLower.includes("lactam") || textLower.includes("mic") || textLower.includes("superinfection") || textLower.includes("tetracycline") || textLower.includes("gentamicin") || textLower.includes("ciprofloxacin")) {
+        enExp = "β-lactams (penicillins) inhibit bacterial cell wall peptidoglycan synthesis (time-dependent). Aminoglycosides (gentamicin) are concentration-dependent and cause nephrotoxicity. Tetracyclines inhibit ribosomes and discolor fetal teeth. Broad-spectrum antibiotics can cause superinfections (e.g., oral thrush, C. difficile with clindamycin).";
+        zhExp = "抗菌药考点：β-内酰胺类（青霉素）破坏细菌细胞壁（时间依赖型）；氨基糖苷类（庆大霉素）具肾毒性（浓度依赖型）；四环素影响胎儿牙齿发育；氟喹诺酮（环丙沙星）可致肌腱断裂；广谱抗生素易引发二重感染（Superinfection，如鹅口疮、克林霉素引发艰难梭菌肠炎）。";
+      } else if (textLower.includes("arthritis") || textLower.includes("rheumatoid") || textLower.includes("gout") || textLower.includes("methotrexate") || textLower.includes("colchicine") || textLower.includes("allopurinol") || textLower.includes("hydroxychloroquine") || textLower.includes("etanercept") || textLower.includes("infliximab")) {
+        enExp = "RA is an autoimmune symmetrical arthritis affecting the synovial membrane with morning stiffness >30 mins and pannus formation. Methotrexate is the anchor DMARD (taken once weekly + folic acid; monitor LFTs/CBC; teratogenic). Biologics (TNF inhibitors like infliximab/etanercept) require TB screening. Gout is caused by uric acid crystals (acute = colchicine; prophylaxis = allopurinol).";
+        zhExp = "关节炎考点：类风湿(RA)是自身免疫性滑膜炎，对称受累且晨僵>30分钟；骨关节炎(OA)是退行性磨损，晨僵<30分钟。甲氨蝶呤(MTX)每周口服1次并配叶酸，需查肝功和血常规；生物制剂（TNF抑制剂）用前必查结核(TB)。痛风急性期用秋水仙碱，平时降尿酸预防用别嘌醇。";
+      } else if (textLower.includes("mental") || textLower.includes("stigma") || textLower.includes("recovery") || textLower.includes("benzodiazepine") || textLower.includes("gaba") || textLower.includes("diazepam") || textLower.includes("temazepam") || textLower.includes("zolpidem") || textLower.includes("flumazenil") || textLower.includes("ssri")) {
+        enExp = "Holistic and recovery-focused mental health care empowers the patient and involves families. Benzodiazepines (diazepam, temazepam) enhance GABA inhibition to reduce anxiety/insomnia, but carry risks of tolerance, dependence, and CNS depression in the elderly (limit to 2–4 weeks). Flumazenil reverses benzodiazepine overdose. SSRIs + CBT are first-line for chronic anxiety/panic.";
+        zhExp = "心理与镇静药考点：康复模式（Recovery model）强调赋权患者、消除病耻感（Stigma）。苯二氮卓类（地西泮、替马西泮）通过增强 GABA 抑制中枢，仅限短期（2~4周）使用以防成瘾依赖，中毒用氟马西尼（Flumazenil）逆转。焦虑与惊恐障碍长期首选 SSRI 抗抑郁药联合认知行为治疗（CBT）。";
+      } else if (textLower.includes("potassium") || textLower.includes("sodium") || textLower.includes("calcium") || textLower.includes("electrolyte") || textLower.includes("ckd") || textLower.includes("gfr") || textLower.includes("dialysis") || textLower.includes("aldosterone") || textLower.includes("siadh")) {
+        enExp = "Sodium regulates extracellular fluid balance; Potassium regulates cardiac rhythm and muscle contraction. Severe hyperkalemia requires immediate IV calcium gluconate to stabilize the myocardium. Hypocalcemia presents with tetany, Trousseau's and Chvostek's signs. CKD Stage 3 = GFR 30–59; Stage 5 (<15) requires dialysis or kidney transplant (diabetes is the #1 cause of CKD).";
+        zhExp = "电解质与肾病：钠（Sodium）主要调节体液平衡；钾（Potassium）维持心肌节律，严重高钾血症首选静脉推注葡萄糖酸钙保护心脏；低钙血症会出现手足抽搐（Trousseau征/Chvostek征）。糖尿病是慢性肾病(CKD)首要病因，CKD 3期 GFR 为 30-59，5期需透析或肾移植。";
+      } else {
+        enExp = `The correct answer is ${correctEnStr}. This directly addresses the core clinical or physiological mechanism asked in the stem.`;
+        zhExp = `本道题考察【${q.moduleCnTitle}】的核心概念，标准答案为 ${correctZhStr}。请结合上方题干与选项的中文对照加深记忆。`;
       }
 
-      // Default concise, context-aware rationale
-      return `Correct option represents standard evidence-based practice in this module.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 此为 <strong>${q.moduleTitle}</strong> 模块重点基础，请熟记选项对应的临床应用或病理机制。`;
+      return `
+        <div class="space-y-1.5">
+          <div class="text-slate-900 font-semibold">
+            <span class="px-1.5 py-0.5 bg-amber-600 text-white rounded text-[11px] mr-1.5">Correct Answer</span>
+            ${correctEnStr}
+          </div>
+          <div class="text-slate-700 leading-relaxed">
+            <strong class="text-amber-900">🇬🇧 Simple English:</strong> ${enExp}
+          </div>
+          <div class="text-slate-800 leading-relaxed pt-1 border-t border-amber-200/60">
+            <strong class="text-indigo-700">🇨🇳 中文简易解析:</strong> ${zhExp}
+          </div>
+        </div>
+      `;
     }
 
     function prevQuestion() {
@@ -2845,20 +3107,20 @@
           </div>
 
           <!-- Bilingual Rationale inside Mistake Card -->
-          <div class="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs space-y-3">
+          <div class="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs space-y-3">
             <div>
-              <div class="font-bold flex items-center gap-1.5 text-indigo-900 border-b border-indigo-100 pb-1.5 mb-1.5">
+              <div class="font-bold flex items-center gap-1.5 text-indigo-900 border-b border-indigo-100 pb-1.5 mb-2">
                 <i class="fa-solid fa-language text-indigo-500"></i>
-                <span>题目中文参考 (Translation)</span>
+                <span>题目与选项中文翻译 (Translation)</span>
               </div>
               <div class="leading-relaxed pl-1 text-slate-700">
-                ${getRoughChineseTranslation(q.question)}
+                ${buildFullQuestionTranslationHTML(q)}
               </div>
             </div>
             <div>
-              <div class="font-bold flex items-center gap-1.5 text-amber-900 border-b border-amber-100 pb-1.5 mb-1.5">
+              <div class="font-bold flex items-center gap-1.5 text-amber-900 border-b border-amber-200/70 pb-1.5 mb-2">
                 <i class="fa-solid fa-lightbulb text-amber-600"></i>
-                <span>简易双语解析 (Rationale)</span>
+                <span>答案中英文简易解释 (Simple English & Chinese Explanation)</span>
               </div>
               <div class="leading-relaxed pl-1 text-slate-700">
                 ${getQuestionExplanation(q)}
@@ -2965,6 +3227,12 @@
               `;
             }).join("")}
           </div>
+          ${showAnswers ? `
+            <div class="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-2">
+              <div>${buildFullQuestionTranslationHTML(q)}</div>
+              <div class="pt-2 border-t border-slate-200">${getQuestionExplanation(q)}</div>
+            </div>
+          ` : ""}
         `;
         listEl.appendChild(card);
       });

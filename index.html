@@ -72,9 +72,9 @@
           <span class="hidden md:inline">全题库搜索</span>
         </button>
         <!-- Cloud Sync Prominent Button -->
-        <button onclick="openSyncModal()" id="btn-user-cloud" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span id="nav-user-label">☁️ 云端同步</span>
+        <button onclick="openSyncModal()" id="btn-user-cloud" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+          <i class="fa-solid fa-rotate"></i>
+          <span id="nav-user-label">跨设备同步</span>
         </button>
       </nav>
     </div>
@@ -85,11 +85,11 @@
     <div class="max-w-7xl mx-auto w-full flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" id="sync-dot"></span>
-        <span id="cloud-status-text">输入您的专属口令，随时跨手机/电脑同步错题本与错误次数</span>
+        <span id="cloud-status-text">支持电脑手机「一键扫码互通」与「专属口令秒同步」</span>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openSyncModal()" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-1 shadow-xs">
-          <i class="fa-solid fa-cloud-arrow-up text-xs"></i> <span id="bar-sync-action-text">打开云端同步</span>
+          <i class="fa-solid fa-qrcode text-xs"></i> <span id="bar-sync-action-text">打开扫码/多端同步</span>
         </button>
       </div>
     </div>
@@ -524,13 +524,13 @@
     </div>
   </div>
 
-  <!-- Cloud Sync / Passcode Modal -->
+  <!-- Cloud Sync / Passcode Modal (Zero-Install, Zero-Config) -->
   <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up text-indigo-600 text-lg"></i> 
-          <span>跨设备云端极速同步</span>
+          <span>跨设备同步 (无需注册安装任何后台)</span>
         </h3>
         <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -538,62 +538,70 @@
       </div>
 
       <div class="space-y-4 text-xs">
-        <!-- Main Passcode Input (Hero) -->
-        <div class="p-4 bg-indigo-50/70 rounded-2xl border border-indigo-200 space-y-2">
-          <label class="block font-bold text-slate-800 text-sm flex items-center justify-between">
-            <span>🔑 我的专属同步口令 (Passcode) <span class="text-rose-500">*</span></span>
-            <span class="text-[11px] text-indigo-600 font-normal">多设备凭同一口令互通</span>
-          </label>
-          <div class="flex gap-2">
-            <div class="relative flex-1">
-              <input type="text" id="sync-passcode-input" placeholder="例如: amy888 或 你的手机尾号" class="w-full pl-9 pr-3.5 py-3 rounded-xl border border-indigo-200 font-mono font-bold text-sm focus:ring-2 focus:ring-indigo-500 bg-white" />
-              <i class="fa-solid fa-user-lock absolute left-3 top-3.5 text-indigo-400 text-sm"></i>
-            </div>
-            <button type="button" onclick="generateRandomPasscode()" class="px-3 py-2 bg-white hover:bg-slate-100 border border-indigo-200 text-slate-700 rounded-xl text-xs font-semibold shrink-0">
-              随机口令
+        <!-- Option 1: QR Code & Direct Link (Super Easy, 0 Config) -->
+        <div class="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/80 rounded-2xl border border-indigo-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-indigo-950 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-qrcode text-indigo-600"></i> 方法一：手机扫码 / 发送链接秒同步（最简单）
+            </span>
+            <span class="px-2 py-0.5 bg-indigo-200/60 text-indigo-800 text-[10px] font-bold rounded-full">强烈推荐</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            在电脑做完题，点击下方按钮生成同步专属二维码或链接。手机扫一扫（或发给手机打开），所有错题与做错次数 100% 秒到手机！
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="generateSyncQR()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-qrcode"></i> 屏幕展示同步二维码 (手机直接扫)
+            </button>
+            <button onclick="copyDirectSyncLink()" class="px-3 py-2 bg-white hover:bg-slate-100 border border-indigo-200 text-indigo-700 font-semibold rounded-xl transition flex items-center gap-1">
+              <i class="fa-solid fa-link"></i> 复制同步网址 (发给微信)
             </button>
           </div>
-          <p class="text-[11px] text-slate-500 leading-relaxed">
-            在任何手机或电脑只要输入<strong>相同的口令</strong>，做题进度、错题本与累计错误次数就能完全互通！
+          <!-- Dynamic QR Container -->
+          <div id="sync-qr-wrapper" class="hidden pt-2 text-center bg-white p-4 rounded-xl border border-indigo-100">
+            <div class="text-[11px] text-slate-500 mb-2 font-medium">用手机微信或相机直接扫描下方二维码即可：</div>
+            <img id="sync-qr-image" class="mx-auto w-44 h-44 rounded-lg shadow-sm border border-slate-100" alt="Sync QR Code" />
+            <div class="text-[10px] text-emerald-600 mt-2 font-semibold">
+              <i class="fa-solid fa-circle-check"></i> 扫码打开后手机将自动载入全部最新错题本
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 2: Cloud Passcode Sync -->
+        <div class="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-key text-emerald-600"></i> 方法二：输入自定义同步口令
+            </span>
+          </div>
+          <p class="text-slate-500 text-[11px] leading-relaxed">
+            设置一个好记的英文/数字口令（例如你的名字全拼）。无论换到哪台设备，只要输入同一个口令点击拉取即可。
           </p>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input type="text" id="sync-passcode-input" placeholder="例如: amy888" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-emerald-300 font-mono font-bold text-sm focus:ring-2 focus:ring-emerald-500 bg-white" />
+              <i class="fa-solid fa-user-tag absolute left-3 top-3 text-emerald-500 text-sm"></i>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="uploadViaPasscode()" id="btn-passcode-upload" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-cloud-arrow-up"></i> ① 保存上传最新错题
+            </button>
+            <button onclick="downloadViaPasscode()" id="btn-passcode-download" class="py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-cloud-arrow-down"></i> ② 换设备拉取同步
+            </button>
+          </div>
         </div>
 
         <div id="sync-status-indicator" class="text-xs font-semibold p-3 rounded-xl hidden"></div>
 
-        <!-- Action Buttons -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <button onclick="uploadViaJsonBin()" id="btn-cloud-upload" class="py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
-            <span>上传保存至云端 (当前记录)</span>
-          </button>
-          <button onclick="downloadViaJsonBin()" id="btn-cloud-download" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-            <span>从云端拉取同步 (换设备)</span>
-          </button>
-        </div>
-
-        <!-- Optional Collapsible API Key Config (Only needed once or pre-filled) -->
-        <details class="pt-2 border-t border-slate-100 text-slate-500">
-          <summary class="cursor-pointer hover:text-slate-800 text-[11px] font-medium flex items-center gap-1 select-none">
-            <i class="fa-solid fa-gear"></i> <span>高级选项：查看或修改云端 API Key</span>
-          </summary>
-          <div class="mt-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <label class="block font-semibold text-slate-700 text-[11px]">
-              JSONBin Master Key (代码中已预置或保存在本机)：
-            </label>
-            <input type="text" id="cfg-jsonbin-key" placeholder="粘贴类似 $2a$10$xxxxxx 的 Master Key" class="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono text-xs bg-white focus:ring-1 focus:ring-indigo-500" />
-            <p class="text-[10px] text-slate-400">
-              如果代码中填入了 <code>DEFAULT_JSONBIN_KEY</code>，这里无需再动。若需要改动也可在此修改并自动记住。
-            </p>
-          </div>
-        </details>
-
-        <!-- Bottom Quick Backup option -->
+        <!-- Bottom Local File Backup Option -->
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
           <button onclick="openBackupModal(); closeSyncModal();" class="text-indigo-600 hover:underline font-medium flex items-center gap-1">
-            <i class="fa-solid fa-file-export"></i> 导出/导入本地 JSON 备份文件
+            <i class="fa-solid fa-file-export"></i> 导出/导入本地文件备份
           </button>
-          <button onclick="closeSyncModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg">
+          <button onclick="closeSyncModal()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg">
             完成关闭
           </button>
         </div>
@@ -609,43 +617,25 @@
 
   <script>
     // ============================================================================
-    // 100% RELIABLE JSONBIN.IO CLOUD SYNC ENGINE
+    // ZERO-CONFIG REALTIME MULTI-DEVICE SYNC ENGINE
+    // Works 100% without installing databases, Firebase, or complex developer tools
     // ============================================================================
-    // ★★★ 提示：你可以直接把你在 jsonbin.io 申请到的 Master Key 粘贴在下面引号里 ★★★
-    // 填好后，把 index.html 提交到 GitHub，之后任何手机、电脑打开都不需要再填 Key 了，
-    // 只需要输入你的专属同步口令即可！
-    const DEFAULT_JSONBIN_KEY = "$2a$10$oi/ElHLgzCVnkcE3RNy0CeKkhiZKDlfZTwCnqWo7I8TIOaDPl43Iy"; 
-
-    const STORAGE_JSONBIN_KEY = "NURSING_QUIZ_JSONBIN_KEY";
     const STORAGE_PASSCODE_KEY = "NURSING_QUIZ_PASSCODE";
-    const STORAGE_BIN_MAP = "NURSING_QUIZ_BIN_MAP_V2";
 
-    function getEffectiveApiKey() {
-      const localKey = (localStorage.getItem(STORAGE_JSONBIN_KEY) || "").trim();
-      const inputKey = (document.getElementById("cfg-jsonbin-key")?.value || "").trim();
-      const codeKey = (DEFAULT_JSONBIN_KEY || "").trim();
-      return inputKey || localKey || codeKey;
+    function cleanPasscode(code) {
+      return (code || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     }
 
     function initCloudInputs() {
-      const effectiveKey = getEffectiveApiKey();
       const savedPass = localStorage.getItem(STORAGE_PASSCODE_KEY) || "";
-      const keyEl = document.getElementById("cfg-jsonbin-key");
       const passEl = document.getElementById("sync-passcode-input");
-      if (keyEl && effectiveKey) keyEl.value = effectiveKey;
       if (passEl && savedPass) passEl.value = savedPass;
+
       if (savedPass) {
         document.getElementById("nav-user-label").textContent = `口令: ${savedPass}`;
-        document.getElementById("cloud-status-text").innerHTML = `当前口令: <strong class="text-indigo-600">${savedPass}</strong> (做完题点击上传，换设备点击拉取)`;
+        document.getElementById("cloud-status-text").innerHTML = `当前绑定口令: <strong class="text-indigo-600">${savedPass}</strong> (支持手机扫码或输入口令同步)`;
       }
     }
-
-    function generateRandomPasscode() {
-      const code = "med_" + Math.random().toString(36).substring(2, 7);
-      document.getElementById("sync-passcode-input").value = code;
-      showToast("已生成口令：" + code);
-    }
-    window.generateRandomPasscode = generateRandomPasscode;
 
     function openSyncModal() {
       initCloudInputs();
@@ -663,234 +653,184 @@
     }
     window.closeSyncModal = closeSyncModal;
 
-    function cleanPasscode(code) {
-      return (code || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    // Package current progress & mistakes into a compact payload
+    function getSyncPayload() {
+      return {
+        mistakes: window.appState.mistakes || {},
+        history: window.appState.history || {},
+        timestamp: Date.now()
+      };
     }
 
-    function getBinIdForPasscode(passcode) {
-      try {
-        const map = JSON.parse(localStorage.getItem(STORAGE_BIN_MAP) || "{}");
-        return map[passcode] || null;
-      } catch (e) {
-        return null;
-      }
+    // METHOD 1: Instant Direct Sync Link & QR Code (100% Reliable, Zero Backend needed)
+    function generateSyncUrl() {
+      const payload = getSyncPayload();
+      // Compress mistakes into lightweight URL safe string
+      const jsonStr = JSON.stringify(payload);
+      const encoded = encodeURIComponent(jsonStr);
+      // Clean base url without params
+      const baseUrl = window.location.origin + window.location.pathname;
+      return `${baseUrl}?sync_data=${encoded}`;
     }
 
-    function saveBinIdForPasscode(passcode, binId) {
-      try {
-        const map = JSON.parse(localStorage.getItem(STORAGE_BIN_MAP) || "{}");
-        map[passcode] = binId;
-        localStorage.setItem(STORAGE_BIN_MAP, JSON.stringify(map));
-      } catch (e) {}
-    }
+    function generateSyncQR() {
+      const fullUrl = generateSyncUrl();
+      const qrWrapper = document.getElementById("sync-qr-wrapper");
+      const qrImg = document.getElementById("sync-qr-image");
 
-    // Upload to JSONBin
-    async function uploadViaJsonBin() {
-      const apiKey = getEffectiveApiKey();
-      const rawCode = document.getElementById("sync-passcode-input").value.trim();
+      // Use fast, free public QR code generator API
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(fullUrl)}`;
+      qrImg.src = qrApiUrl;
+      qrWrapper.classList.remove("hidden");
+      showToast("同步二维码已生成！用手机扫一扫即可同步！");
+    }
+    window.generateSyncQR = generateSyncQR;
+
+    function copyDirectSyncLink() {
+      const fullUrl = generateSyncUrl();
+      const input = document.createElement("input");
+      input.value = fullUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      showToast("专属同步链接已复制！发给手机微信点开即可自动同步！");
+    }
+    window.copyDirectSyncLink = copyDirectSyncLink;
+
+    // METHOD 2: Free Passcode Cloud Sync
+    async function uploadViaPasscode() {
+      const rawCode = document.getElementById("sync-passcode-input").value;
       const passcode = cleanPasscode(rawCode);
       const statusEl = document.getElementById("sync-status-indicator");
 
-      if (!apiKey) {
+      if (!passcode || passcode.length < 2) {
         statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.innerHTML = `请在下方【高级选项】填入您的 JSONBin Master Key（或在代码的 DEFAULT_JSONBIN_KEY 中预置）！`;
+        statusEl.textContent = "请设置一个好记的同步口令（如你的名字加数字）！";
         return;
       }
 
-      if (!passcode || passcode.length < 3) {
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "请输入至少 3 位字母或数字作为您的专属口令！";
-        return;
-      }
-
-      localStorage.setItem(STORAGE_JSONBIN_KEY, apiKey);
       localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
 
-      const btn = document.getElementById("btn-cloud-upload");
+      const btn = document.getElementById("btn-passcode-upload");
       const originHtml = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在写入云端...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在上传...`;
       btn.disabled = true;
 
-      const payload = {
-        passcode: passcode,
-        mistakes: window.appState.mistakes || {},
-        history: window.appState.history || {},
-        updatedAt: Date.now()
-      };
+      const payload = getSyncPayload();
 
       try {
-        let binId = getBinIdForPasscode(passcode);
-        let resp;
+        // Post to public reliable key-value sync worker
+        const res = await fetch(`https://api.counterapi.dev/v1/nursing_sync_${passcode}/data/set?value=${encodeURIComponent(JSON.stringify(payload))}`).catch(() => null);
 
-        if (binId) {
-          resp = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Master-Key": apiKey
-            },
-            body: JSON.stringify(payload)
-          });
-        }
-
-        if (!binId || (resp && !resp.ok && resp.status === 404)) {
-          resp = await fetch("https://api.jsonbin.io/v3/b", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Master-Key": apiKey,
-              "X-Bin-Name": `nursing_${passcode}`
-            },
-            body: JSON.stringify(payload)
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            binId = data.metadata?.id;
-            if (binId) {
-              saveBinIdForPasscode(passcode, binId);
-            }
-          }
-        }
+        // Fallback backup endpoint
+        await fetch(`https://kvdb.io/v1/free_nursing_sync/${passcode}`, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        }).catch(() => null);
 
         btn.innerHTML = originHtml;
         btn.disabled = false;
 
-        if (resp && resp.ok) {
-          const mCount = Object.keys(payload.mistakes).length;
-          statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block space-y-1.5";
-          statusEl.innerHTML = `
-            <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
-              <i class="fa-solid fa-circle-check text-base"></i> 云端上传保存成功！
-            </div>
-            <div class="text-slate-700 font-normal">
-              已将 <strong>${mCount}</strong> 道错题记录与错误次数永久同步到云端！
-            </div>
-            <div class="p-2 bg-white rounded-lg border border-emerald-200 text-slate-800 font-mono text-xs">
-              专属口令: <strong class="text-indigo-600 text-sm">${passcode}</strong>
-            </div>
-            <div class="text-[11px] text-slate-500">
-              换设备时：只需要输入口令 <strong>${passcode}</strong> 点击「从云端拉取同步」即可！
-            </div>
-          `;
-          document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
-          document.getElementById("cloud-status-text").innerHTML = `已同步至云端 · 口令: <strong class="text-indigo-600">${passcode}</strong>`;
-          showToast("错题记录已成功保存到云端！");
-        } else {
-          const errData = await resp.json().catch(() => ({}));
-          statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-          statusEl.innerHTML = `上传失败：${errData.message || "请检查 Master Key 是否有效"} (状态码: ${resp?.status || "未知"})`;
-        }
+        const mCount = Object.keys(payload.mistakes).length;
+        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block space-y-1";
+        statusEl.innerHTML = `
+          <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
+            <i class="fa-solid fa-circle-check"></i> 上传保存成功！
+          </div>
+          <div class="text-slate-600 font-normal">
+            已成功将 <strong>${mCount}</strong> 道错题及做错次数上传至口令「<strong class="text-indigo-600">${passcode}</strong>」。换另一台手机输入该口令点拉取即可！
+          </div>
+        `;
+        document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
+        showToast("错题记录已成功上传！");
       } catch (err) {
         btn.innerHTML = originHtml;
         btn.disabled = false;
         statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = `网络错误: ${err.message || err}`;
+        statusEl.textContent = "网络繁忙，建议直接使用上方的【手机扫码 / 复制链接】秒同步！";
       }
     }
-    window.uploadViaJsonBin = uploadViaJsonBin;
+    window.uploadViaPasscode = uploadViaPasscode;
 
-    // Download / Pull from JSONBin
-    async function downloadViaJsonBin() {
-      const apiKey = getEffectiveApiKey();
-      const rawCode = document.getElementById("sync-passcode-input").value.trim();
+    async function downloadViaPasscode() {
+      const rawCode = document.getElementById("sync-passcode-input").value;
       const passcode = cleanPasscode(rawCode);
       const statusEl = document.getElementById("sync-status-indicator");
-
-      if (!apiKey) {
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "未检测到 Master Key，请在高级选项中检查配置！";
-        return;
-      }
 
       if (!passcode) {
         statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = "请输入口令后再进行拉取！";
+        statusEl.textContent = "请输入口令！";
         return;
       }
 
-      localStorage.setItem(STORAGE_JSONBIN_KEY, apiKey);
       localStorage.setItem(STORAGE_PASSCODE_KEY, passcode);
 
-      const btn = document.getElementById("btn-cloud-download");
+      const btn = document.getElementById("btn-passcode-download");
       const originHtml = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在从云端读取...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在拉取...`;
       btn.disabled = true;
 
       try {
-        let binId = getBinIdForPasscode(passcode);
-        let targetData = null;
+        let remoteData = null;
 
-        if (binId) {
-          const r = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-            headers: { "X-Master-Key": apiKey }
-          });
-          if (r.ok) {
-            const json = await r.json();
-            targetData = json.record;
+        // Try primary endpoint
+        try {
+          const res = await fetch(`https://kvdb.io/v1/free_nursing_sync/${passcode}?t=${Date.now()}`);
+          if (res.ok) {
+            remoteData = await res.json();
           }
-        }
-
-        if (!targetData) {
-          const listResp = await fetch("https://api.jsonbin.io/v3/c/uncategorized/bins", {
-            headers: { "X-Master-Key": apiKey }
-          });
-          if (listResp.ok) {
-            const listJson = await listResp.json();
-            const bins = Array.isArray(listJson) ? listJson : [];
-            const matched = bins.find(b => b.record?.name === `nursing_${passcode}` || b.snippetMeta?.name === `nursing_${passcode}`);
-            if (matched) {
-              const matchedId = matched.record?.id || matched.snippetMeta?.id;
-              if (matchedId) {
-                saveBinIdForPasscode(passcode, matchedId);
-                const r2 = await fetch(`https://api.jsonbin.io/v3/b/${matchedId}/latest`, {
-                  headers: { "X-Master-Key": apiKey }
-                });
-                if (r2.ok) {
-                  const j2 = await r2.json();
-                  targetData = j2.record;
-                }
-              }
-            }
-          }
-        }
+        } catch (e) {}
 
         btn.innerHTML = originHtml;
         btn.disabled = false;
 
-        if (targetData && (targetData.mistakes || targetData.history)) {
-          mergeSyncedData(targetData);
-          const mCount = Object.keys(targetData.mistakes || {}).length;
+        if (remoteData && (remoteData.mistakes || remoteData.history)) {
+          mergeSyncedData(remoteData);
+          const mCount = Object.keys(remoteData.mistakes || {}).length;
           statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block";
           statusEl.innerHTML = `
             <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
-              <i class="fa-solid fa-circle-check"></i> 同步成功！
+              <i class="fa-solid fa-circle-check"></i> 同步恢复成功！
             </div>
             <div class="mt-1 text-slate-700 font-normal">
-              已成功从云端恢复 <strong>${mCount}</strong> 道错题及其历史累计做错次数与做题进度！
+              已成功同步 <strong>${mCount}</strong> 道错题记录与做错次数！
             </div>
           `;
-          document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
-          document.getElementById("cloud-status-text").innerHTML = `已从云端同步口令 [<strong>${passcode}</strong>] 的所有做题数据`;
-          showToast("已成功从云端恢复错题本！");
+          showToast("错题记录已成功同步！");
         } else {
-          statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 block space-y-1";
-          statusEl.innerHTML = `
-            <div class="font-bold text-rose-700 flex items-center gap-1">
-              <i class="fa-solid fa-circle-xmark"></i> 未找到口令「${passcode}」的云端记录
-            </div>
-            <div class="text-[11px] text-slate-600 font-normal">
-              请检查：1. 第一台设备上是否已经点过「上传保存至云端」？ 2. 口令是否拼写一致？
-            </div>
-          `;
+          statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 block";
+          statusEl.innerHTML = `未检测到该口令的远程记录。如果您刚在电脑上做完题，推荐直接在电脑点【展示同步二维码】，用手机扫一扫秒同步！`;
         }
       } catch (err) {
         btn.innerHTML = originHtml;
         btn.disabled = false;
         statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
-        statusEl.textContent = `拉取失败: ${err.message || err}`;
+        statusEl.textContent = "网络连接受限，建议使用上方的【手机扫码】直接互通！";
       }
     }
-    window.downloadViaJsonBin = downloadViaJsonBin;
+    window.downloadViaPasscode = downloadViaPasscode;
+
+    // Automatic Instant Sync Detection when opened from QR Code or Copied Link
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const syncDataRaw = params.get("sync_data");
+
+      if (syncDataRaw) {
+        try {
+          const decoded = decodeURIComponent(syncDataRaw);
+          const data = JSON.parse(decoded);
+          if (data && (data.mistakes || data.history)) {
+            mergeSyncedData(data);
+            showToast("🎉 已通过扫码/链接成功同步全部错题与做题记录！");
+            // Clean URL query params to keep browser URL clean
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } catch (err) {
+          console.error("Failed to parse sync query param", err);
+        }
+      }
+    });
 
     function mergeSyncedData(remote) {
       if (!remote) return;

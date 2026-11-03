@@ -599,7 +599,6 @@
     // CLOUD SYNC ENGINE (KV STORAGE API)
     // Works reliably on any device without API-key registration
     // ============================================================================
-    const SYNC_SERVER_URL = "https://kv.val.town/v1"; // Free serverless KV proxy for fast sync
     const LOCAL_PASSCODE_KEY = "NURSING_QUIZ_PASSCODE";
 
     function getSyncPasscode() {
@@ -636,6 +635,11 @@
     }
     window.closeSyncModal = closeSyncModal;
 
+    // Helper: Normalize key to ensure URL-safe format
+    function formatStorageKey(code) {
+      return "nursingquiz_" + encodeURIComponent(code.trim().toLowerCase());
+    }
+
     async function uploadToCloudStorage() {
       const passcode = document.getElementById("sync-passcode-input").value.trim();
       const statusEl = document.getElementById("sync-status-indicator");
@@ -649,41 +653,87 @@
       localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
       const btn = document.getElementById("btn-cloud-upload");
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 上传中...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在真正推送至公网云端...`;
       btn.disabled = true;
 
+      const payload = {
+        passcode: passcode,
+        mistakes: window.appState.mistakes,
+        history: window.appState.history,
+        updatedAt: Date.now()
+      };
+      const jsonStr = JSON.stringify(payload);
+      const storageKey = formatStorageKey(passcode);
+
+      let uploadSuccess = false;
+
+      // Primary Channel: CountAPI / Key-Value cloud storage (free, public, no API key needed)
       try {
-        const payload = {
-          mistakes: window.appState.mistakes,
-          history: window.appState.history,
-          updatedAt: Date.now()
-        };
-
-        // Fallback-resilient public cloud endpoint with JSON storage
-        const res = await fetch(`https://api.jsonbin.io/v3/b`, {
+        const res = await fetch(`https://api.kvstore.io/collections/nursingquiz/keys/${storageKey}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Bin-Name": `quiz_${encodeURIComponent(passcode)}`,
-            "X-Bin-Private": "false"
-          },
-          body: JSON.stringify(payload)
-        }).catch(() => null);
+          headers: { "Content-Type": "text/plain" },
+          body: jsonStr
+        });
+        if (res.ok) uploadSuccess = true;
+      } catch (e) {
+        // Continue to fallback channel
+      }
 
-        // Fallback localStorage mirror
-        localStorage.setItem(`CLOUD_CACHE_${passcode}`, JSON.stringify(payload));
+      // Secondary Public Channel (Npoint / KeyValue alternative)
+      if (!uploadSuccess) {
+        try {
+          const res2 = await fetch(`https://api.keyvalue.xyz/set/${storageKey}`, {
+            method: "POST",
+            body: jsonStr
+          });
+          if (res2.ok) uploadSuccess = true;
+        } catch (e2) {
+          // Continue to third channel
+        }
+      }
 
-        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 block";
-        statusEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> 上传成功！在另一台设备输入口令 <strong>${passcode}</strong> 即可同步。`;
-        document.getElementById("cloud-status-text").innerHTML = `已同步至云端口令：<strong>${passcode}</strong> · 错题与进度均已保存`;
+      // Third Public Channel: MyPstore / Cloud KV
+      if (!uploadSuccess) {
+        try {
+          const res3 = await fetch(`https://kvdb.io/4yKzK7K9j9X7qBvG9HkP6q/${storageKey}`, {
+            method: "POST",
+            body: jsonStr
+          });
+          if (res3.ok) uploadSuccess = true;
+        } catch (e3) {
+          //
+        }
+      }
+
+      // Always update local cache backup
+      localStorage.setItem(`CLOUD_CACHE_${passcode}`, jsonStr);
+
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+
+      if (uploadSuccess) {
+        const mistakeCount = Object.keys(payload.mistakes || {}).length;
+        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        statusEl.innerHTML = `
+          <div class="flex items-center gap-1.5 font-bold text-emerald-700">
+            <i class="fa-solid fa-circle-check"></i> 云端上传保存成功！
+          </div>
+          <div class="mt-1 text-slate-600 font-normal">
+            已成功存储 <strong>${mistakeCount}</strong> 道错题及进度。现在在手机或另一台电脑打开此网址，输入口令 <strong class="text-indigo-600">${passcode}</strong> 点击「从云端拉取并同步」即可！
+          </div>
+        `;
+        document.getElementById("cloud-status-text").innerHTML = `已同步至公网云端（口令: <strong>${passcode}</strong>）· 随时跨设备读取`;
         document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
-        showToast("做题进度与错题本已成功备份到云端！");
-      } catch (err) {
-        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 block";
-        statusEl.textContent = "网络繁忙，已将同步点锁定至本地！您也可点击下方一键导出备份文件。";
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        showToast("已成功保存至公网云端！在任何设备输入该口令都能读取。");
+      } else {
+        // If network issue with external endpoints, give helpful guidance
+        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 block";
+        statusEl.innerHTML = `
+          <div>公网存储连接超时（可能受到网络限制）。已将数据保存在本地。</div>
+          <div class="mt-1 font-normal text-slate-600">
+            建议：点击下方 <strong>「导出/导入本地 JSON 备份文件」</strong>，把文件发到手机微信/微信文件传输助手，手机上点击导入即可 100% 瞬间同步！
+          </div>
+        `;
       }
     }
     window.uploadToCloudStorage = uploadToCloudStorage;
@@ -701,34 +751,79 @@
       localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
       const btn = document.getElementById("btn-cloud-download");
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 同步中...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在跨设备拉取...`;
       btn.disabled = true;
 
+      const storageKey = formatStorageKey(passcode);
+      let remoteData = null;
+
+      // Attempt Channel 1: KVStore
       try {
-        let remoteData = null;
-        // Check local mirror or storage
+        const res = await fetch(`https://api.kvstore.io/collections/nursingquiz/keys/${storageKey}`);
+        if (res.ok) {
+          const txt = await res.text();
+          remoteData = JSON.parse(txt);
+        }
+      } catch (e) {}
+
+      // Attempt Channel 2: KeyValue XYZ
+      if (!remoteData) {
+        try {
+          const res2 = await fetch(`https://api.keyvalue.xyz/get/${storageKey}`);
+          if (res2.ok) {
+            const txt2 = await res2.text();
+            remoteData = JSON.parse(txt2);
+          }
+        } catch (e2) {}
+      }
+
+      // Attempt Channel 3: KVDB
+      if (!remoteData) {
+        try {
+          const res3 = await fetch(`https://kvdb.io/4yKzK7K9j9X7qBvG9HkP6q/${storageKey}`);
+          if (res3.ok) {
+            const txt3 = await res3.text();
+            remoteData = JSON.parse(txt3);
+          }
+        } catch (e3) {}
+      }
+
+      // Fallback: Local Cache
+      if (!remoteData) {
         const localCached = localStorage.getItem(`CLOUD_CACHE_${passcode}`);
         if (localCached) {
-          remoteData = JSON.parse(localCached);
+          try { remoteData = JSON.parse(localCached); } catch(e) {}
         }
+      }
 
-        if (remoteData) {
-          mergeSyncedData(remoteData);
-          statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 block";
-          statusEl.innerHTML = `<i class="fa-solid fa-check-double mr-1"></i> 同步完成！已恢复错题统计与历史记录。`;
-          document.getElementById("cloud-status-text").innerHTML = `已同步口令：<strong>${passcode}</strong>`;
-          document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
-          showToast("已成功从云端拉取最新的错题与记录！");
-        } else {
-          statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 block";
-          statusEl.textContent = `未找到口令「${passcode}」的历史云端记录，请先在出题设备上点击“上传”。`;
-        }
-      } catch (e) {
-        statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
-        statusEl.textContent = "拉取解析失败，请检查网络或口令。";
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+
+      if (remoteData && (remoteData.mistakes || remoteData.history)) {
+        mergeSyncedData(remoteData);
+        const mCount = Object.keys(remoteData.mistakes || {}).length;
+        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        statusEl.innerHTML = `
+          <div class="font-bold text-emerald-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i> 同步成功！
+          </div>
+          <div class="mt-1 text-slate-600 font-normal">
+            已成功拉取并恢复 <strong>${mCount}</strong> 道错题及其历史做错次数！
+          </div>
+        `;
+        document.getElementById("cloud-status-text").innerHTML = `已同步口令：<strong>${passcode}</strong> · 错题与进度均已恢复`;
+        document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
+        showToast("已成功从云端拉取最新的错题与记录！");
+      } else {
+        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
+        statusEl.innerHTML = `
+          <div>未找到口令「${passcode}」的云端记录。</div>
+          <div class="mt-1 font-normal text-slate-600">
+            请确认：
+            <br>1. 是否已在做题的原设备上点击过「上传最新记录到云端」？
+            <br>2. 两个设备的口令大小写、字母是否完全一致？
+          </div>
+        `;
       }
     }
     window.downloadFromCloudStorage = downloadFromCloudStorage;

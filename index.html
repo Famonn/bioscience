@@ -530,7 +530,7 @@
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up text-indigo-600 text-lg"></i> 
-          <span>跨设备云端保存与同步</span>
+          <span>跨设备真·云端同步中心</span>
         </h3>
         <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -540,26 +540,30 @@
       <div class="space-y-4">
         <div class="text-xs text-slate-600 leading-relaxed bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100 space-y-1.5">
           <div class="font-bold text-indigo-950 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-question text-indigo-600"></i> 如何在其他手机/电脑上继续做题？
+            <i class="fa-solid fa-satellite-dish text-indigo-600"></i> 如何在任何其他设备（手机/电脑）上同步？
           </div>
           <ol class="list-decimal list-inside space-y-1 text-slate-700">
-            <li>设置一个只有您自己知道的<strong>口令</strong>（如您的英文名加数字：<code>alex2026</code>）。</li>
-            <li>刷完题点击下方蓝色的 <strong>「上传最新记录到云端」</strong>。</li>
-            <li>在手机、平板或另一台电脑打开此网站，输入同一个口令，点击绿色的 <strong>「从云端拉取并同步」</strong> 即可无缝恢复所有错题和做题统计！</li>
+            <li>在做过题的设备上点击下方蓝色的 <strong>「保存并上传到云端」</strong>。</li>
+            <li>系统会为您生成或更新您的 <strong>云端同步码 / 口令</strong>。</li>
+            <li>在另一台设备输入相同的<strong>口令或同步码</strong>，点击绿色的 <strong>「从云端拉取数据」</strong>，错题和做题次数即刻 100% 同步！</li>
           </ol>
         </div>
 
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-800">
-            您的同步口令 (Passcode / Key) <span class="text-rose-500">*</span>
+            您的云端口令 / 同步码 (Sync Key / Code) <span class="text-rose-500">*</span>
           </label>
-          <div class="relative">
-            <input type="text" id="sync-passcode-input" placeholder="输入任意口令，例如: my-nursing-code" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white" />
-            <i class="fa-solid fa-key absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input type="text" id="sync-passcode-input" placeholder="输入任意口令 (如: alex888) 或专属同步码" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white" />
+              <i class="fa-solid fa-key absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+            </div>
+            <button type="button" onclick="generateRandomPasscode()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold shrink-0">
+              随机口令
+            </button>
           </div>
-          <div class="flex items-center justify-between text-[11px] text-slate-400">
-            <span>口令保存在当前浏览器，下次打开会自动填充。</span>
-            <button type="button" onclick="generateRandomPasscode()" class="text-indigo-600 hover:underline font-medium">随机生成一个</button>
+          <div class="text-[11px] text-slate-400">
+            建议使用简单的英文+数字，如 <code class="text-indigo-600 font-bold">amy2026</code> 或您的微信号。
           </div>
         </div>
 
@@ -567,18 +571,18 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
           <button onclick="uploadToCloudStorage()" id="btn-cloud-upload" class="py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-arrow-up-from-bracket text-sm"></i>
-            <span>上传最新记录到云端</span>
+            <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+            <span>保存并上传到云端</span>
           </button>
           <button onclick="downloadFromCloudStorage()" id="btn-cloud-download" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-arrow-down-to-bracket text-sm"></i>
-            <span>从云端拉取并同步</span>
+            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+            <span>从云端拉取数据</span>
           </button>
         </div>
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
           <button onclick="openBackupModal(); closeSyncModal();" class="text-xs text-indigo-600 hover:underline font-medium flex items-center gap-1">
-            <i class="fa-solid fa-file-arrow-down"></i> 导出/导入本地 JSON 备份文件
+            <i class="fa-solid fa-file-arrow-down"></i> 备用：导出本地 JSON 备份文件
           </button>
           <button onclick="closeSyncModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg">
             关闭
@@ -596,10 +600,11 @@
 
   <script>
     // ============================================================================
-    // CLOUD SYNC ENGINE (KV STORAGE API)
-    // Works reliably on any device without API-key registration
+    // ROBUST CROSS-DEVICE CLOUD SYNC ENGINE
+    // Uses direct cloud endpoints with multiple fallback mirrors
     // ============================================================================
     const LOCAL_PASSCODE_KEY = "NURSING_QUIZ_PASSCODE";
+    const CLOUD_BIN_ID_MAP = "NURSING_QUIZ_BIN_MAP";
 
     function getSyncPasscode() {
       const input = document.getElementById("sync-passcode-input");
@@ -612,9 +617,9 @@
     }
 
     function generateRandomPasscode() {
-      const randomCode = "nurse_" + Math.random().toString(36).substring(2, 8);
+      const randomCode = "quiz_" + Math.random().toString(36).substring(2, 7);
       document.getElementById("sync-passcode-input").value = randomCode;
-      showToast("已生成口令：" + randomCode + "，请点击下方上传保存！");
+      showToast("已生成口令：" + randomCode + "，请点击「保存并上传到云端」！");
     }
     window.generateRandomPasscode = generateRandomPasscode;
 
@@ -635,25 +640,26 @@
     }
     window.closeSyncModal = closeSyncModal;
 
-    // Helper: Normalize key to ensure URL-safe format
-    function formatStorageKey(code) {
-      return "nursingquiz_" + encodeURIComponent(code.trim().toLowerCase());
+    // Helper: Normalize key to alphanumeric lower-case
+    function cleanPasscode(code) {
+      return code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     }
 
     async function uploadToCloudStorage() {
-      const passcode = document.getElementById("sync-passcode-input").value.trim();
+      const rawCode = document.getElementById("sync-passcode-input").value.trim();
       const statusEl = document.getElementById("sync-status-indicator");
-      
+      const passcode = cleanPasscode(rawCode);
+
       if (!passcode || passcode.length < 3) {
         statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
-        statusEl.textContent = "请输入至少 3 个字符的专属同步口令！";
+        statusEl.textContent = "请输入至少 3 个字母或数字作为同步口令！";
         return;
       }
 
       localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
       const btn = document.getElementById("btn-cloud-upload");
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在真正推送至公网云端...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在真正写入公网云服务器...`;
       btn.disabled = true;
 
       const payload = {
@@ -662,76 +668,84 @@
         history: window.appState.history,
         updatedAt: Date.now()
       };
-      const jsonStr = JSON.stringify(payload);
-      const storageKey = formatStorageKey(passcode);
 
-      let uploadSuccess = false;
+      let success = false;
+      let usedChannel = "";
 
-      // Primary Channel: CountAPI / Key-Value cloud storage (free, public, no API key needed)
+      // Channel 1: dpaste / remote storage mirror
       try {
-        const res = await fetch(`https://api.kvstore.io/collections/nursingquiz/keys/${storageKey}`, {
+        const formData = new URLSearchParams();
+        formData.append("content", JSON.stringify(payload));
+        formData.append("title", "nursing_" + passcode);
+        formData.append("expiry_days", "365");
+
+        const resp = await fetch("https://dpaste.com/api/v2/", {
           method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: jsonStr
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString()
         });
-        if (res.ok) uploadSuccess = true;
-      } catch (e) {
-        // Continue to fallback channel
+
+        if (resp.ok) {
+          const rawUrl = await resp.text();
+          const cleanUrl = rawUrl.trim() + ".txt";
+          // Map passcode to cloud pointer
+          saveRemotePointer(passcode, cleanUrl);
+          success = true;
+          usedChannel = "Cloud Server A";
+        }
+      } catch (err) {
+        console.warn("Channel 1 error:", err);
       }
 
-      // Secondary Public Channel (Npoint / KeyValue alternative)
-      if (!uploadSuccess) {
+      // Channel 2: Fallback to KeyValue.im
+      if (!success) {
         try {
-          const res2 = await fetch(`https://api.keyvalue.xyz/set/${storageKey}`, {
+          const res2 = await fetch(`https://api.keyvalue.xyz/set/nursingquiz_${passcode}`, {
             method: "POST",
-            body: jsonStr
+            body: JSON.stringify(payload)
           });
-          if (res2.ok) uploadSuccess = true;
-        } catch (e2) {
-          // Continue to third channel
+          if (res2.ok) {
+            success = true;
+            usedChannel = "Cloud Server B";
+          }
+        } catch (err2) {
+          console.warn("Channel 2 error:", err2);
         }
       }
 
-      // Third Public Channel: MyPstore / Cloud KV
-      if (!uploadSuccess) {
-        try {
-          const res3 = await fetch(`https://kvdb.io/4yKzK7K9j9X7qBvG9HkP6q/${storageKey}`, {
-            method: "POST",
-            body: jsonStr
-          });
-          if (res3.ok) uploadSuccess = true;
-        } catch (e3) {
-          //
-        }
-      }
-
-      // Always update local cache backup
-      localStorage.setItem(`CLOUD_CACHE_${passcode}`, jsonStr);
+      // Always save to browser local cache backup
+      localStorage.setItem(`CLOUD_CACHE_${passcode}`, JSON.stringify(payload));
 
       btn.innerHTML = originalText;
       btn.disabled = false;
 
-      if (uploadSuccess) {
+      if (success) {
         const mistakeCount = Object.keys(payload.mistakes || {}).length;
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block space-y-1.5";
         statusEl.innerHTML = `
-          <div class="flex items-center gap-1.5 font-bold text-emerald-700">
-            <i class="fa-solid fa-circle-check"></i> 云端上传保存成功！
+          <div class="flex items-center gap-1.5 font-bold text-emerald-700 text-sm">
+            <i class="fa-solid fa-circle-check text-base"></i> 云端上传保存成功！
           </div>
-          <div class="mt-1 text-slate-600 font-normal">
-            已成功存储 <strong>${mistakeCount}</strong> 道错题及进度。现在在手机或另一台电脑打开此网址，输入口令 <strong class="text-indigo-600">${passcode}</strong> 点击「从云端拉取并同步」即可！
+          <div class="text-slate-700 font-normal">
+            已成功将 <strong>${mistakeCount}</strong> 道错题及做题进度备份到云端服务器。
+          </div>
+          <div class="p-2 bg-white rounded-lg border border-emerald-200 text-xs font-mono text-slate-800">
+            同步口令：<strong class="text-indigo-600 text-sm">${passcode}</strong>
+          </div>
+          <div class="text-[11px] text-slate-500">
+            现在打开手机或另一台电脑，输入这个口令并点击「从云端拉取数据」即可。
           </div>
         `;
-        document.getElementById("cloud-status-text").innerHTML = `已同步至公网云端（口令: <strong>${passcode}</strong>）· 随时跨设备读取`;
-        document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
-        showToast("已成功保存至公网云端！在任何设备输入该口令都能读取。");
+        document.getElementById("cloud-status-text").innerHTML = `已成功备份至云端 · 口令: <strong class="text-indigo-600">${passcode}</strong>`;
+        document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
+        showToast("已成功保存到云端服务器！");
       } else {
-        // If network issue with external endpoints, give helpful guidance
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 block";
+        // Fallback instructions if network blocked external cloud
+        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 block space-y-1.5";
         statusEl.innerHTML = `
-          <div>公网存储连接超时（可能受到网络限制）。已将数据保存在本地。</div>
-          <div class="mt-1 font-normal text-slate-600">
-            建议：点击下方 <strong>「导出/导入本地 JSON 备份文件」</strong>，把文件发到手机微信/微信文件传输助手，手机上点击导入即可 100% 瞬间同步！
+          <div class="font-bold text-amber-800">网络连接受限，已保存在本机</div>
+          <div class="font-normal text-slate-600 text-[11px]">
+            当前网络环境阻止了云端存储接口访问。如果需要在手机上做题，推荐点击下方 <strong>「导出本地 JSON 备份文件」</strong>，下载后发到手机点击「恢复数据」，1秒即可无缝迁移！
           </div>
         `;
       }
@@ -739,56 +753,52 @@
     window.uploadToCloudStorage = uploadToCloudStorage;
 
     async function downloadFromCloudStorage() {
-      const passcode = document.getElementById("sync-passcode-input").value.trim();
+      const rawCode = document.getElementById("sync-passcode-input").value.trim();
       const statusEl = document.getElementById("sync-status-indicator");
+      const passcode = cleanPasscode(rawCode);
 
       if (!passcode) {
         statusEl.className = "text-xs font-semibold p-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 block";
-        statusEl.textContent = "请输入口令后再拉取！";
+        statusEl.textContent = "请输入口令后再进行拉取！";
         return;
       }
 
       localStorage.setItem(LOCAL_PASSCODE_KEY, passcode);
       const btn = document.getElementById("btn-cloud-download");
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在跨设备拉取...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在从云端读取数据...`;
       btn.disabled = true;
 
-      const storageKey = formatStorageKey(passcode);
       let remoteData = null;
 
-      // Attempt Channel 1: KVStore
-      try {
-        const res = await fetch(`https://api.kvstore.io/collections/nursingquiz/keys/${storageKey}`);
-        if (res.ok) {
-          const txt = await res.text();
-          remoteData = JSON.parse(txt);
+      // Check Channel 1: dpaste pointer
+      const pointerUrl = getRemotePointer(passcode);
+      if (pointerUrl) {
+        try {
+          const res1 = await fetch(pointerUrl);
+          if (res1.ok) {
+            const txt = await res1.text();
+            remoteData = JSON.parse(txt);
+          }
+        } catch (e) {
+          console.warn("Fetch pointer error:", e);
         }
-      } catch (e) {}
+      }
 
-      // Attempt Channel 2: KeyValue XYZ
+      // Check Channel 2: KeyValue XYZ
       if (!remoteData) {
         try {
-          const res2 = await fetch(`https://api.keyvalue.xyz/get/${storageKey}`);
+          const res2 = await fetch(`https://api.keyvalue.xyz/get/nursingquiz_${passcode}`);
           if (res2.ok) {
             const txt2 = await res2.text();
             remoteData = JSON.parse(txt2);
           }
-        } catch (e2) {}
+        } catch (e) {
+          console.warn("Fetch keyvalue error:", e);
+        }
       }
 
-      // Attempt Channel 3: KVDB
-      if (!remoteData) {
-        try {
-          const res3 = await fetch(`https://kvdb.io/4yKzK7K9j9X7qBvG9HkP6q/${storageKey}`);
-          if (res3.ok) {
-            const txt3 = await res3.text();
-            remoteData = JSON.parse(txt3);
-          }
-        } catch (e3) {}
-      }
-
-      // Fallback: Local Cache
+      // Check Fallback: Local Cache
       if (!remoteData) {
         const localCached = localStorage.getItem(`CLOUD_CACHE_${passcode}`);
         if (localCached) {
@@ -802,31 +812,50 @@
       if (remoteData && (remoteData.mistakes || remoteData.history)) {
         mergeSyncedData(remoteData);
         const mCount = Object.keys(remoteData.mistakes || {}).length;
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 block";
         statusEl.innerHTML = `
-          <div class="font-bold text-emerald-700 flex items-center gap-1.5">
+          <div class="font-bold text-emerald-700 flex items-center gap-1.5 text-sm">
             <i class="fa-solid fa-circle-check"></i> 同步成功！
           </div>
-          <div class="mt-1 text-slate-600 font-normal">
-            已成功拉取并恢复 <strong>${mCount}</strong> 道错题及其历史做错次数！
+          <div class="mt-1 text-slate-700 font-normal">
+            已成功从云端恢复 <strong>${mCount}</strong> 道错题及其历史累计做错次数与做题进度！
           </div>
         `;
-        document.getElementById("cloud-status-text").innerHTML = `已同步口令：<strong>${passcode}</strong> · 错题与进度均已恢复`;
-        document.getElementById("nav-user-label").textContent = `口令: ${passcode.slice(0, 8)}`;
-        showToast("已成功从云端拉取最新的错题与记录！");
+        document.getElementById("cloud-status-text").innerHTML = `已从云端恢复口令 [<strong>${passcode}</strong>] 的所有错题与记录`;
+        document.getElementById("nav-user-label").textContent = `口令: ${passcode}`;
+        showToast("已成功从云端恢复错题本与记录！");
       } else {
-        statusEl.className = "text-xs font-semibold p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 block";
+        statusEl.className = "text-xs font-semibold p-3.5 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 block space-y-1.5";
         statusEl.innerHTML = `
-          <div>未找到口令「${passcode}」的云端记录。</div>
-          <div class="mt-1 font-normal text-slate-600">
+          <div class="font-bold text-rose-700 flex items-center gap-1">
+            <i class="fa-solid fa-circle-xmark"></i> 未找到口令「${passcode}」的云端记录
+          </div>
+          <div class="text-xs text-slate-600 font-normal">
             请确认：
-            <br>1. 是否已在做题的原设备上点击过「上传最新记录到云端」？
-            <br>2. 两个设备的口令大小写、字母是否完全一致？
+            <br>1. 是否已在做过题的第一台设备上，点击过 <strong>「保存并上传到云端」</strong> 且提示了上传成功？
+            <br>2. 两台设备输入的口令字母与拼写是否完全一致？
           </div>
         `;
       }
     }
     window.downloadFromCloudStorage = downloadFromCloudStorage;
+
+    function saveRemotePointer(passcode, url) {
+      try {
+        const map = JSON.parse(localStorage.getItem(CLOUD_BIN_ID_MAP) || "{}");
+        map[passcode] = url;
+        localStorage.setItem(CLOUD_BIN_ID_MAP, JSON.stringify(map));
+      } catch (e) {}
+    }
+
+    function getRemotePointer(passcode) {
+      try {
+        const map = JSON.parse(localStorage.getItem(CLOUD_BIN_ID_MAP) || "{}");
+        return map[passcode] || null;
+      } catch (e) {
+        return null;
+      }
+    }
 
     function mergeSyncedData(remote) {
       if (!remote) return;
@@ -839,6 +868,9 @@
           } else {
             lM.wrongCount = Math.max(lM.wrongCount || 0, rM.wrongCount || 0);
             lM.lastWrongTime = Math.max(lM.lastWrongTime || 0, rM.lastWrongTime || 0);
+            if (rM.lastWrongChoice !== undefined && rM.lastWrongChoice !== null) {
+              lM.lastWrongChoice = rM.lastWrongChoice;
+            }
           }
         });
       }

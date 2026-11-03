@@ -71,6 +71,11 @@
           <i class="fa-solid fa-magnifying-glass"></i>
           <span class="hidden md:inline">全题库搜索</span>
         </button>
+        <!-- Gemini AI Settings Button -->
+        <button onclick="openAiKeyModal()" id="btn-ai-config" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span id="nav-ai-label" class="hidden sm:inline">Gemini AI 解析</span>
+        </button>
         <!-- Cloud Sync Prominent Button -->
         <button onclick="openSyncModal()" id="btn-user-cloud" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
           <i class="fa-solid fa-rotate"></i>
@@ -85,11 +90,14 @@
     <div class="max-w-7xl mx-auto w-full flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" id="sync-dot"></span>
-        <span id="cloud-status-text">支持电脑手机「一键扫码互通」与「专属口令秒同步」</span>
+        <span id="cloud-status-text">✨ 已连接 Gemini AI 双语解析引擎（在当前 Google 预览窗口免配置直接使用；去 GitHub 可填免费 Gemini Key）</span>
       </div>
       <div class="flex items-center gap-2">
+        <button onclick="openAiKeyModal()" class="px-2.5 py-1 rounded bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-1 shadow-xs">
+          <i class="fa-solid fa-robot text-xs"></i> <span>AI 解析设置</span>
+        </button>
         <button onclick="openSyncModal()" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-1 shadow-xs">
-          <i class="fa-solid fa-qrcode text-xs"></i> <span id="bar-sync-action-text">打开扫码/多端同步</span>
+          <i class="fa-solid fa-qrcode text-xs"></i> <span id="bar-sync-action-text">扫码/多端同步</span>
         </button>
       </div>
     </div>
@@ -315,22 +323,44 @@
             <!-- Bilingual Question Translation & Simple Answer Explanation Card -->
             <div id="q-explanation-card" class="mt-3 p-4 rounded-xl bg-white border border-slate-200 text-sm leading-relaxed space-y-4 shadow-xs text-slate-800">
               
-              <!-- 1. Question & Options Chinese Translation Section -->
+              <!-- Gemini Live AI Deep Bilingual Tutor Box -->
+              <div class="bg-gradient-to-r from-violet-50 via-indigo-50 to-purple-50 p-4 rounded-xl border border-violet-200 shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-violet-200/70 pb-2 mb-2.5">
+                  <div class="font-bold text-violet-950 flex items-center gap-1.5 text-xs sm:text-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles text-violet-600"></i>
+                    <span>Gemini AI 实时中英文逐题精讲 (完整翻译 + 简易中英解析)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="inline-flex items-center cursor-pointer text-[11px] text-violet-800 font-medium">
+                      <input type="checkbox" id="toggle-auto-ai" class="rounded text-violet-600 mr-1" checked onchange="toggleAutoAiExplain(this.checked)">
+                      答题后自动调用 Gemini
+                    </label>
+                    <button onclick="triggerLiveGeminiExplanation()" id="btn-trigger-ai" class="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1">
+                      <i class="fa-solid fa-bolt"></i> 重新生成 AI 精讲
+                    </button>
+                  </div>
+                </div>
+                <div id="q-gemini-live-box" class="text-slate-800 text-[13px] sm:text-sm leading-relaxed space-y-2">
+                  正在为您呼叫 Gemini AI 生成完整中英文对照解析...
+                </div>
+              </div>
+
+              <!-- 1. Instant Built-in Question & Options Chinese Translation Section -->
               <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100">
                 <div class="font-bold text-indigo-900 flex items-center gap-1.5 border-b border-indigo-200/70 pb-1.5 mb-2 text-xs sm:text-sm">
                   <i class="fa-solid fa-language text-indigo-600"></i>
-                  <span>题目与选项中文翻译 (Chinese Translation)</span>
+                  <span>本地离线速览：题目与选项对照 (Instant Local Translation)</span>
                 </div>
                 <div id="q-stem-zh-text" class="text-slate-800 text-[13px] sm:text-sm space-y-1.5">
                   Translation text goes here...
                 </div>
               </div>
 
-              <!-- 2. Simple Bilingual Answer Rationale Section -->
+              <!-- 2. Instant Built-in Simple Bilingual Answer Rationale Section -->
               <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200/80">
                 <div class="font-bold text-amber-900 flex items-center gap-1.5 border-b border-amber-200/70 pb-1.5 mb-2 text-xs sm:text-sm">
                   <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                  <span>答案中英文简易解释 (Simple English & Chinese Explanation)</span>
+                  <span>本地离线速览：答案中英文简易解释 (Simple English & Chinese Explanation)</span>
                 </div>
                 <div id="q-explanation-text" class="text-slate-800 text-[13px] sm:text-sm space-y-2">
                   Explanation text goes here...
@@ -340,289 +370,7 @@
           </div>
 
           <!-- Bottom Navigation Controls -->
-          <div class="flex items-center justify-between pt-4 border-t border-slate-100 gap-3">
-            <button onclick="prevQuestion()" id="btn-prev-q" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-sm flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none transition">
-              <i class="fa-solid fa-arrow-left"></i> 上一题
-            </button>
-
-            <div class="flex items-center gap-2">
-              <button onclick="revealCurrentAnswer()" id="btn-reveal-ans" class="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium text-xs sm:text-sm transition">
-                <i class="fa-regular fa-eye mr-1"></i>看答案
-              </button>
-            </div>
-
-            <button onclick="nextQuestion()" id="btn-next-q" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm flex items-center gap-2 shadow-sm transition">
-              <span>下一题</span> <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Right Sidebar: Question Navigator Grid -->
-        <div id="question-sheet-panel" class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-grip text-indigo-600"></i>
-              <span>答题卡导航 (Question Map)</span>
-            </h4>
-            <div class="flex items-center gap-2 text-[11px] text-slate-500">
-              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>对</span>
-              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block"></span>错</span>
-              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200 inline-block"></span>未答</span>
-            </div>
-          </div>
-
-          <div id="question-map-grid" class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 max-h-96 overflow-y-auto custom-scrollbar pr-1">
-            <!-- Populated by JS -->
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>快捷键：数字键 1-4 选择，N 下一题，P/← 上一题</span>
-            <button onclick="restartCurrentQuiz()" class="text-indigo-600 hover:underline font-medium">重新开始本组</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= TAB 3: MISTAKE BANK & ANALYTICS (错题本与统计) ================= -->
-    <section id="tab-mistakes" class="hidden space-y-6">
-      <!-- Top Analytics Cards -->
-      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-          <div>
-            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 text-xs font-bold mb-1">
-              <i class="fa-solid fa-chart-pie"></i> 错题本与错误次数统计中心
-            </div>
-            <h2 class="text-xl font-bold text-slate-900">我的错题库 (Mistake Bank & Error Frequency Tracker)</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-              系统自动保存每一道做错的题目，并精确统计每道题累计错了多少次。重做时若再次答错，错误次数将继续累加。
-            </p>
-          </div>
-
-          <!-- Action Buttons for Redoing Mistakes -->
-          <div class="flex flex-wrap items-center gap-2.5">
-            <button onclick="startMistakeQuiz('filtered')" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2">
-              <i class="fa-solid fa-rotate-right"></i> 重做当前筛选错题 (<span id="mistake-filtered-ActionCount">0</span>)
-            </button>
-            <button onclick="startMistakeQuiz('frequent')" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2">
-              <i class="fa-solid fa-fire"></i> 专练高频错题 (错≥2次)
-            </button>
-            <button onclick="openClearMistakesConfirm()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-xs sm:text-sm rounded-xl transition">
-              <i class="fa-regular fa-trash-can mr-1"></i>清空
-            </button>
-          </div>
-        </div>
-
-        <!-- Module Breakdown of Mistakes -->
-        <div>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">各模块错题分布与累计错误次数 (Mistakes by Module)</h4>
-          <div id="mistake-module-bars" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Filter & Sort Bar for Mistake List -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-2.5">
-          <div class="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-            <i class="fa-solid fa-filter text-indigo-600"></i> 模块筛选:
-          </div>
-          <select id="mistake-filter-module" onchange="renderMistakesTab()" class="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="ALL">全部模块 (All Modules)</option>
-          </select>
-
-          <select id="mistake-filter-freq" onchange="renderMistakesTab()" class="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="all">全部错误次数 (≥1次)</option>
-            <option value="2">高频错题：错误 ≥ 2 次</option>
-            <option value="3">顽固错题：错误 ≥ 3 次</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2.5">
-          <div class="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-            <i class="fa-solid fa-sort text-indigo-600"></i> 排序:
-          </div>
-          <select id="mistake-sort-by" onchange="renderMistakesTab()" class="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="wrongDesc">错误次数从多到少 (最多错优先)</option>
-            <option value="recentDesc">最近答错时间优先</option>
-            <option value="moduleAsc">按模块与题号顺序</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Mistake Cards List -->
-      <div id="mistakes-list-container" class="space-y-3">
-        <!-- Populated by JS -->
-      </div>
-    </section>
-
-    <!-- ================= TAB 4: BROWSE & SEARCH ALL 710 QUESTIONS ================= -->
-    <section id="tab-browse" class="hidden space-y-5">
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">全题库检索与背题模式 (Browse All 710 Questions)</h2>
-            <p class="text-xs text-slate-500">支持按关键词、药名、疾病名搜索全部 710 道题目，一键展开标准答案或手动加入错题本。</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="inline-flex items-center cursor-pointer bg-slate-100 px-3 py-2 rounded-xl">
-              <input type="checkbox" id="browse-show-answers" class="sr-only peer" checked onchange="renderBrowseTab()">
-              <div class="w-8 h-4 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all relative peer-checked:bg-indigo-600"></div>
-              <span class="ml-2 text-xs font-semibold text-slate-700">直接显示全库答案 (背题模式)</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div class="sm:col-span-7 relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" id="browse-search-input" oninput="renderBrowseTab(1)" placeholder="输入英文题目关键词、药物名或选项 (如: insulin, methotrexate, GABA, hypoxia)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-          </div>
-          <div class="sm:col-span-5">
-            <select id="browse-module-select" onchange="renderBrowseTab(1)" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="ALL">全部模块 (710 题)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
-          <span id="browse-result-count">共找到 710 道题目</span>
-          <div id="browse-pagination" class="flex items-center gap-1.5"></div>
-        </div>
-      </div>
-
-      <div id="browse-questions-list" class="space-y-3">
-        <!-- Populated by JS -->
-      </div>
-
-      <div id="browse-pagination-bottom" class="flex justify-center pt-2"></div>
-    </section>
-
-  </main>
-
-  <!-- Backup / Restore Modal -->
-  <div id="modal-backup" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-          <i class="fa-solid fa-shield-halved text-indigo-600"></i> 错题本与刷题统计备份 / 恢复
-        </h3>
-        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <p class="text-xs text-slate-600 leading-relaxed">
-        您的错题记录与错误次数已自动保存在当前浏览器中。您也可以复制下方 JSON 备份代码，或下载备份文件，以便在不同设备间同步错题本。
-      </p>
-      <textarea id="backup-json-textarea" rows="5" class="w-full p-3 rounded-xl border border-slate-200 font-mono text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="在此粘贴备份的 JSON 数据以恢复..."></textarea>
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
-        <div class="flex items-center gap-2">
-          <button onclick="downloadBackupFile()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
-            <i class="fa-solid fa-download mr-1"></i>下载备份文件 (.json)
-          </button>
-          <button onclick="importBackupJson()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition">
-            <i class="fa-solid fa-file-import mr-1"></i>从文本框恢复数据
-          </button>
-        </div>
-        <button onclick="closeBackupModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">关闭</button>
-      </div>
-      <div id="backup-status-msg" class="text-xs font-medium text-emerald-600 hidden"></div>
-    </div>
-  </div>
-
-  <!-- Clear Mistakes Confirmation Modal -->
-  <div id="modal-clear-confirm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
-      <div class="flex items-center gap-3 text-rose-600">
-        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <h3 class="font-bold text-base text-slate-900">确认清空错题本或重置统计？</h3>
-      </div>
-      <p class="text-xs sm:text-sm text-slate-600">
-        您可以选择只移除“重做已答对”的错题，或者彻底清空所有错题记录和累计错误次数。
-      </p>
-      <div class="flex flex-col sm:flex-row justify-end gap-2 pt-2">
-        <button onclick="closeClearMistakesConfirm()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">取消</button>
-        <button onclick="clearMasteredMistakes()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">仅移除重做已对错题</button>
-        <button onclick="clearAllMistakes()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold">彻底清空全部错题</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cloud Sync / Passcode Modal (Zero-Install, Zero-Config) -->
-  <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up text-indigo-600 text-lg"></i> 
-          <span>跨设备同步 (无需注册安装任何后台)</span>
-        </h3>
-        <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="space-y-4 text-xs">
-        <!-- Option 1: QR Code & Direct Link (Super Easy, 0 Config) -->
-        <div class="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/80 rounded-2xl border border-indigo-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-indigo-950 text-sm flex items-center gap-1.5">
-              <i class="fa-solid fa-qrcode text-indigo-600"></i> 方法一：手机扫码 / 发送链接秒同步（最简单）
-            </span>
-            <span class="px-2 py-0.5 bg-indigo-200/60 text-indigo-800 text-[10px] font-bold rounded-full">强烈推荐</span>
-          </div>
-          <p class="text-slate-600 leading-relaxed text-[11px]">
-            在电脑做完题，点击下方按钮生成同步专属二维码或链接。手机扫一扫（或发给手机打开），所有错题与做错次数 100% 秒到手机！
-          </p>
-          <div class="flex flex-wrap items-center gap-2">
-            <button onclick="generateSyncQR()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-qrcode"></i> 屏幕展示同步二维码 (手机直接扫)
-            </button>
-            <button onclick="copyDirectSyncLink()" class="px-3 py-2 bg-white hover:bg-slate-100 border border-indigo-200 text-indigo-700 font-semibold rounded-xl transition flex items-center gap-1">
-              <i class="fa-solid fa-link"></i> 复制同步网址 (发给微信)
-            </button>
-          </div>
-          <!-- Dynamic QR Container -->
-          <div id="sync-qr-wrapper" class="hidden pt-2 text-center bg-white p-4 rounded-xl border border-indigo-100">
-            <div class="text-[11px] text-slate-500 mb-2 font-medium">用手机微信或相机直接扫描下方二维码即可：</div>
-            <img id="sync-qr-image" class="mx-auto w-44 h-44 rounded-lg shadow-sm border border-slate-100" alt="Sync QR Code" />
-            <div class="text-[10px] text-emerald-600 mt-2 font-semibold">
-              <i class="fa-solid fa-circle-check"></i> 扫码打开后手机将自动载入全部最新错题本
-            </div>
-          </div>
-        </div>
-
-        <!-- Option 2: Cloud Passcode Sync -->
-        <div class="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-              <i class="fa-solid fa-key text-emerald-600"></i> 方法二：输入自定义同步口令
-            </span>
-          </div>
-          <p class="text-slate-500 text-[11px] leading-relaxed">
-            设置一个好记的英文/数字口令（例如你的名字全拼）。无论换到哪台设备，只要输入同一个口令点击拉取即可。
-          </p>
-          <div class="flex gap-2">
-            <div class="relative flex-1">
-              <input type="text" id="sync-passcode-input" placeholder="例如: amy888" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-emerald-300 font-mono font-bold text-sm focus:ring-2 focus:ring-emerald-500 bg-white" />
-              <i class="fa-solid fa-user-tag absolute left-3 top-3 text-emerald-500 text-sm"></i>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="uploadViaPasscode()" id="btn-passcode-upload" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-cloud-arrow-up"></i> ① 保存上传最新错题
-            </button>
-            <button onclick="downloadViaPasscode()" id="btn-passcode-download" class="py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-cloud-arrow-down"></i> ② 换设备拉取同步
-            </button>
-          </div>
-        </div>
-
-        <div id="sync-status-indicator" class="text-xs font-semibold p-3 rounded-xl hidden"></div>
-
-        <!-- Bottom Local File Backup Option -->
+          <!-- Bottom Local File Backup Option -->
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
           <button onclick="openBackupModal(); closeSyncModal();" class="text-indigo-600 hover:underline font-medium flex items-center gap-1">
             <i class="fa-solid fa-file-export"></i> 导出/导入本地文件备份
@@ -635,13 +383,342 @@
     </div>
   </div>
 
+  <!-- Gemini AI Configuration Modal (For GitHub Pages or Custom Key) -->
+  <div id="modal-ai-key" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-violet-600 text-lg"></i>
+          <span>Google Gemini AI 实时中英文解析设置</span>
+        </h3>
+        <button onclick="closeAiKeyModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs leading-relaxed text-slate-600">
+        <div class="p-3.5 bg-violet-50 border border-violet-200 rounded-xl text-violet-950 space-y-1">
+          <div class="font-bold text-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <span>方式 1：直接在当前 Gemini 预览窗口使用（零配置！）</span>
+          </div>
+          <p class="text-[11px] text-violet-800">
+            如果您正在 Gemini 右侧的 <strong>Preview（预览）</strong> 窗口中刷题，系统已经自动连接了 Google 官方内部的 Gemini 3 Flash 服务器，<strong>无需填写任何 Key</strong> 即可自动生成每道题的完整中文翻译与简单中英文解释！
+          </p>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+          <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+            <i class="fa-brands fa-github text-slate-800"></i>
+            <span>方式 2：放到 GitHub Pages 网站上也能联网用 Gemini AI</span>
+          </div>
+          <p class="text-[11px] text-slate-600">
+            因为 GitHub 自身没有连接 Google 服务器，如果您把网页放到 GitHub 上，只需填入一个免费的 Google Gemini API Key（在 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-600 underline font-bold">Google AI Studio</a> 一键免费获取），GitHub 网站就能直接连回 Google Gemini 服务器为您实时翻译和解析！
+          </p>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">您的 Gemini API Key（选填，仅在 GitHub 外部访问时需要）：</label>
+            <input type="password" id="gemini-user-key-input" placeholder="AIzaSy... (在当前 Gemini 窗口内留空即可直接用)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-xs bg-white focus:ring-2 focus:ring-violet-500 focus:outline-none" />
+          </div>
+          <div class="flex items-center justify-end gap-2 pt-1">
+            <button onclick="saveUserGeminiKey()" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition shadow-xs">
+              保存设置并测试 AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm font-medium items-center gap-2.5 transition-all">
     <i class="fa-solid fa-circle-info text-indigo-400"></i>
     <span id="toast-text">Notification</span>
   </div>
 
+  <!-- Official Google Cloud Firestore Sync (Works automatically inside Google/Gemini Canvas environment) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    async function initGoogleNativeCloud() {
+      try {
+        if (typeof __firebase_config === "undefined" || !__firebase_config) return;
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== "undefined" ? __app_id : "nursing-710-quiz";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const stateDocRef = doc(db, "artifacts", appId, "users", user.uid, "quiz_data", "main_state");
+
+        // Listen for cloud updates
+        onSnapshot(stateDocRef, (snap) => {
+          if (snap.exists()) {
+            const cloudData = snap.data();
+            if (cloudData && typeof window.mergeSyncedData === "function") {
+              window.mergeSyncedData(cloudData);
+            }
+          }
+        }, (err) => {
+          console.warn("Firestore listener warning:", err);
+        });
+
+        // Hook global cloud save
+        window.syncStateWithCloud = async () => {
+          if (!auth.currentUser) return;
+          try {
+            await setDoc(stateDocRef, {
+              mistakes: window.appState.mistakes || {},
+              history: window.appState.history || {},
+              updatedAt: Date.now()
+            }, { merge: true });
+          } catch (e) {
+            console.warn("Cloud save skipped:", e);
+          }
+        };
+
+        const statusText = document.getElementById("cloud-status-text");
+        if (statusText) {
+          statusText.innerHTML = `✅ <strong>已连接 Google 官方云服务器</strong> (进度与错题本实时自动云端保存 + Gemini AI 实时双语解析已就绪)`;
+        }
+      } catch (e) {
+        // Fallback silently when running outside Canvas (e.g., on GitHub Pages)
+      }
+    }
+
+    initGoogleNativeCloud();
+  </script>
+
   <script>
+    // ============================================================================
+    // GEMINI 3 FLASH LIVE BILINGUAL EXPLANATION ENGINE
+    // Automatically works in Google Canvas environment (apiKey = "") OR on GitHub with user key
+    // ============================================================================
+    const GEMINI_KEY_STORAGE = "NURSING_QUIZ_USER_GEMINI_KEY";
+    const GEMINI_CACHE_STORAGE = "NURSING_QUIZ_AI_CACHE_V1";
+    let aiExplanationCache = {};
+    let autoTriggerAi = true;
+
+    try {
+      const savedCache = localStorage.getItem(GEMINI_CACHE_STORAGE);
+      if (savedCache) aiExplanationCache = JSON.parse(savedCache);
+    } catch (e) {}
+
+    function openAiKeyModal() {
+      const savedKey = localStorage.getItem(GEMINI_KEY_STORAGE) || "";
+      document.getElementById("gemini-user-key-input").value = savedKey;
+      const modal = document.getElementById("modal-ai-key");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+    window.openAiKeyModal = openAiKeyModal;
+
+    function closeAiKeyModal() {
+      const modal = document.getElementById("modal-ai-key");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+    window.closeAiKeyModal = closeAiKeyModal;
+
+    function saveUserGeminiKey() {
+      const val = (document.getElementById("gemini-user-key-input").value || "").trim();
+      if (val) {
+        localStorage.setItem(GEMINI_KEY_STORAGE, val);
+        showToast("已保存您的 Gemini API Key！现在在 GitHub 上也能实时生成解析！");
+      } else {
+        localStorage.removeItem(GEMINI_KEY_STORAGE);
+        showToast("已切换回 Google 默认内置通道！");
+      }
+      closeAiKeyModal();
+      triggerLiveGeminiExplanation(true);
+    }
+    window.saveUserGeminiKey = saveUserGeminiKey;
+
+    function toggleAutoAiExplain(checked) {
+      autoTriggerAi = checked;
+      if (checked) {
+        triggerLiveGeminiExplanation(false);
+      }
+    }
+    window.toggleAutoAiExplain = toggleAutoAiExplain;
+
+    async function callGeminiBilingualTutor(q, forceRefresh = false) {
+      if (!q) return "";
+      if (!forceRefresh && aiExplanationCache[q.id]) {
+        return aiExplanationCache[q.id];
+      }
+
+      const letters = ["A", "B", "C", "D"];
+      const correctIndices = q.isMulti ? q.answer : [q.answer];
+      const correctStr = correctIndices.map(i => `${letters[i]}) ${q.options[i]}`).join(", ");
+      const optionsBlock = q.options.map((o, i) => `${letters[i]}) ${o}`).join("\n");
+
+      // Use empty string "" for Canvas auto-injection, or user's key if on external GitHub Pages
+      const userKey = localStorage.getItem(GEMINI_KEY_STORAGE) || "";
+      const apiKey = userKey || "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const systemPrompt = `You are a friendly, concise bilingual (English & Chinese) nursing, pathophysiology, and pharmacology tutor.
+Given a multiple-choice question, its options, and the correct answer, output a super clear, easy-to-read explanation in valid JSON format with these exact 4 keys:
+1. "questionZh": Accurate and natural Chinese translation of the question stem.
+2. "optionsZh": Array of 4 strings, translating Option A, B, C, and D into Chinese with a very brief 3-5 word note on why it is right or wrong.
+3. "simpleEnglish": 1 to 2 simple, easy-to-understand English sentences explaining WHY the correct answer is right.
+4. "simpleChinese": 1 to 2 simple, conversational Chinese sentences (大白话解析与记忆口诀) explaining WHY the correct answer is right and how to remember it.`;
+
+      const userPrompt = `Question: ${q.question}
+Options:
+${optionsBlock}
+Correct Answer: ${correctStr}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              questionZh: { type: "STRING" },
+              optionsZh: { type: "ARRAY", items: { type: "STRING" } },
+              simpleEnglish: { type: "STRING" },
+              simpleChinese: { type: "STRING" }
+            },
+            propertyOrdering: ["questionZh", "optionsZh", "simpleEnglish", "simpleChinese"]
+          }
+        }
+      };
+
+      // Exponential backoff retry
+      const delays = [800, 1600];
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+          const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            const parsed = JSON.parse(rawText);
+            const formattedHtml = formatGeminiTutorResponse(q, parsed);
+            aiExplanationCache[q.id] = formattedHtml;
+            try {
+              localStorage.setItem(GEMINI_CACHE_STORAGE, JSON.stringify(aiExplanationCache));
+            } catch (e) {}
+            return formattedHtml;
+          }
+        } catch (err) {
+          if (attempt < delays.length) {
+            await new Promise(r => setTimeout(r, delays[attempt]));
+          } else {
+            throw err;
+          }
+        }
+      }
+    }
+
+    function formatGeminiTutorResponse(q, data) {
+      const letters = ["A", "B", "C", "D"];
+      const correctIndices = q.isMulti ? q.answer : [q.answer];
+      const optsArr = Array.isArray(data.optionsZh) ? data.optionsZh : [];
+
+      const optsHtml = q.options.map((enOpt, idx) => {
+        const isCorr = correctIndices.includes(idx);
+        const zhOpt = optsArr[idx] || "";
+        return `
+          <div class="p-2 rounded-lg border ${isCorr ? 'bg-emerald-100/90 border-emerald-400 text-emerald-950 font-bold' : 'bg-white/80 border-slate-200 text-slate-700'} text-xs">
+            <span class="font-mono font-bold mr-1">${letters[idx]}.</span>
+            <span>${enOpt}</span>
+            <div class="mt-0.5 ${isCorr ? 'text-emerald-800' : 'text-indigo-700'} font-medium">
+              👉 中文：${zhOpt} ${isCorr ? '<span class="ml-1 px-1.5 py-0.2 bg-emerald-600 text-white rounded text-[10px]">✓ 正确选项</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="space-y-3">
+          <div class="p-2.5 bg-white rounded-xl border border-violet-200">
+            <div class="text-xs font-bold text-violet-800 mb-1">🇨🇳 题干完整中文翻译：</div>
+            <div class="text-sm font-bold text-slate-900">${data.questionZh || ""}</div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="text-xs font-bold text-violet-800">📋 四个选项中文翻译与排查：</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              ${optsHtml}
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+            <div>
+              <span class="px-1.5 py-0.5 bg-amber-600 text-white rounded text-[11px] font-bold mr-1.5">🇬🇧 Simple English Explanation</span>
+              <span class="text-slate-800 font-medium">${data.simpleEnglish || ""}</span>
+            </div>
+            <div class="pt-1.5 border-t border-amber-200/80">
+              <span class="px-1.5 py-0.5 bg-indigo-600 text-white rounded text-[11px] font-bold mr-1.5">💡 中文大白话解析与秒记</span>
+              <span class="text-slate-900 font-semibold">${data.simpleChinese || ""}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function triggerLiveGeminiExplanation(forceRefresh = false) {
+      const q = currentQuiz.questions[currentQuiz.currentIndex];
+      const box = document.getElementById("q-gemini-live-box");
+      if (!q || !box) return;
+
+      if (!forceRefresh && aiExplanationCache[q.id]) {
+        box.innerHTML = aiExplanationCache[q.id];
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="flex items-center gap-2.5 py-3 text-violet-700 font-semibold text-xs sm:text-sm">
+          <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
+          <span>Gemini AI 正在为您实时翻译整道题并生成简易中英文解析...</span>
+        </div>
+      `;
+
+      try {
+        const html = await callGeminiBilingualTutor(q, forceRefresh);
+        // Ensure user is still on the same question before updating DOM
+        if (currentQuiz.questions[currentQuiz.currentIndex]?.id === q.id) {
+          box.innerHTML = html;
+        }
+      } catch (err) {
+        box.innerHTML = `
+          <div class="p-3 bg-white/90 rounded-xl border border-violet-200 text-xs text-slate-700 space-y-1.5">
+            <div class="font-bold text-amber-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>提示：当前在外部网页（如 GitHub）访问且未配置 Gemini Key，已为您展示下方内置中英文解析。</span>
+            </div>
+            <div class="text-slate-600">
+              👉 如果您直接在 <strong>Gemini 右侧预览窗口 (Preview)</strong> 中打开本网站，无需任何配置即可免费使用 Google 服务器实时生成 AI 翻译！如果在 GitHub 上使用，可点击右上角 <button onclick="openAiKeyModal()" class="text-violet-700 font-bold underline">【Gemini AI 解析】</button> 填入免费 Key。
+            </div>
+          </div>
+        `;
+      }
+    }
+    window.triggerLiveGeminiExplanation = triggerLiveGeminiExplanation;
+
     // ============================================================================
     // ZERO-CONFIG REALTIME MULTI-DEVICE SYNC ENGINE
     // Works 100% without installing databases, Firebase, or complex developer tools
@@ -2256,6 +2333,11 @@
         // Populate Full Question + Options Chinese Translation & Simple Bilingual Explanation
         document.getElementById("q-stem-zh-text").innerHTML = buildFullQuestionTranslationHTML(q);
         expText.innerHTML = getQuestionExplanation(q);
+
+        // Automatically trigger live Google Gemini AI bilingual translation & simple explanation
+        if (autoTriggerAi) {
+          triggerLiveGeminiExplanation(false);
+        }
 
         if (sAns.isCorrect) {
           fbBox.className = "rounded-2xl p-4 sm:p-5 border border-emerald-200 bg-emerald-50 text-emerald-900 space-y-3";

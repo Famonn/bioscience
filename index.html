@@ -85,14 +85,11 @@
     <div class="max-w-7xl mx-auto w-full flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" id="sync-dot"></span>
-        <span id="cloud-status-text">本机已自动实时保存 · 换设备时点击右侧按钮输入口令即可同步</span>
+        <span id="cloud-status-text">设置个人专属口令，即可在任意手机/电脑/平板无缝同步做题进度与错题本</span>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openSyncModal()" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-1 shadow-xs">
-          <i class="fa-solid fa-cloud-arrow-up text-xs"></i> 立即上传保存到云端
-        </button>
-        <button onclick="openSyncModal()" class="px-2 py-1 rounded bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold flex items-center gap-1">
-          <i class="fa-solid fa-cloud-arrow-down text-xs"></i> 拉取同步
+          <i class="fa-solid fa-key text-xs"></i> <span id="bar-sync-action-text">设置/查看口令并同步</span>
         </button>
       </div>
     </div>
@@ -560,7 +557,10 @@
             <input type="text" id="sync-passcode-input" placeholder="输入任意口令，例如: my-nursing-code" class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white" />
             <i class="fa-solid fa-key absolute left-3 top-3.5 text-slate-400 text-xs"></i>
           </div>
-          <div class="text-[11px] text-slate-400">口令保存在当前浏览器，下次打开会自动填充。</div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>口令保存在当前浏览器，下次打开会自动填充。</span>
+            <button type="button" onclick="generateRandomPasscode()" class="text-indigo-600 hover:underline font-medium">随机生成一个</button>
+          </div>
         </div>
 
         <div id="sync-status-indicator" class="text-xs font-semibold p-2.5 rounded-xl hidden"></div>
@@ -611,6 +611,13 @@
       }
       return code;
     }
+
+    function generateRandomPasscode() {
+      const randomCode = "nurse_" + Math.random().toString(36).substring(2, 8);
+      document.getElementById("sync-passcode-input").value = randomCode;
+      showToast("已生成口令：" + randomCode + "，请点击下方上传保存！");
+    }
+    window.generateRandomPasscode = generateRandomPasscode;
 
     function openSyncModal() {
       const modal = document.getElementById("modal-auth");

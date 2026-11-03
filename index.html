@@ -294,7 +294,7 @@
           </div>
 
           <!-- Answer Feedback Box -->
-          <div id="q-feedback-box" class="hidden rounded-2xl p-4 sm:p-5 border transition-all">
+          <div id="q-feedback-box" class="hidden rounded-2xl p-4 sm:p-5 border transition-all space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <div id="feedback-icon" class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -309,6 +309,32 @@
                 <button id="btn-remove-from-mistakes" onclick="removeCurrentFromMistakes()" class="hidden px-3 py-1.5 bg-white/90 hover:bg-white text-emerald-700 border border-emerald-300 rounded-lg text-xs font-semibold shadow-sm transition">
                   <i class="fa-solid fa-check-double mr-1"></i>已掌握，移出错题本
                 </button>
+              </div>
+            </div>
+
+            <!-- English Clinical Rationale & Explanation Card -->
+            <div id="q-explanation-card" class="mt-3 p-4 rounded-xl bg-white/95 border border-slate-200/90 text-sm leading-relaxed space-y-3 shadow-xs">
+              
+              <!-- Translation Section -->
+              <div>
+                <div class="font-bold text-indigo-900 flex items-center gap-1.5 border-b border-indigo-100 pb-1.5 mb-1.5 text-xs sm:text-sm">
+                  <i class="fa-solid fa-language text-indigo-500"></i>
+                  <span>题目中文参考大意 (Question Translation)</span>
+                </div>
+                <p id="q-stem-zh-text" class="text-slate-600 pl-1 text-[13px] sm:text-sm">
+                  Translation text goes here...
+                </p>
+              </div>
+
+              <!-- Rationale Section -->
+              <div>
+                <div class="font-bold text-amber-900 flex items-center gap-1.5 border-b border-amber-100 pb-1.5 mb-1.5 text-xs sm:text-sm">
+                  <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                  <span>简易双语解析 (Bilingual Rationale)</span>
+                </div>
+                <p id="q-explanation-text" class="text-slate-600 pl-1 text-[13px] sm:text-sm">
+                  Explanation text goes here...
+                </p>
               </div>
             </div>
           </div>
@@ -2217,6 +2243,8 @@
       // Render Feedback Box
       const fbBox = document.getElementById("q-feedback-box");
       const removeBtn = document.getElementById("btn-remove-from-mistakes");
+      const expCard = document.getElementById("q-explanation-card");
+      const expText = document.getElementById("q-explanation-text");
 
       if (isSubmitted) {
         fbBox.classList.remove("hidden");
@@ -2225,8 +2253,12 @@
           : letters[q.answer];
         const currentWrongCount = appState.mistakes[q.id]?.wrongCount || 0;
 
+        // Populate Translation and Explanation
+        document.getElementById("q-stem-zh-text").innerHTML = getRoughChineseTranslation(q.question);
+        expText.innerHTML = getQuestionExplanation(q);
+
         if (sAns.isCorrect) {
-          fbBox.className = "rounded-2xl p-4 sm:p-5 border border-emerald-200 bg-emerald-50 text-emerald-900";
+          fbBox.className = "rounded-2xl p-4 sm:p-5 border border-emerald-200 bg-emerald-50 text-emerald-900 space-y-3";
           document.getElementById("feedback-icon").className = "w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm shrink-0";
           document.getElementById("feedback-icon").innerHTML = `<i class="fa-solid fa-check"></i>`;
           document.getElementById("feedback-title").textContent = `回答正确！标准答案：${correctStr}`;
@@ -2240,7 +2272,7 @@
             removeBtn.classList.add("hidden");
           }
         } else {
-          fbBox.className = "rounded-2xl p-4 sm:p-5 border border-rose-200 bg-rose-50 text-rose-900";
+          fbBox.className = "rounded-2xl p-4 sm:p-5 border border-rose-200 bg-rose-50 text-rose-900 space-y-3";
           document.getElementById("feedback-icon").className = "w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-sm shrink-0";
           document.getElementById("feedback-icon").innerHTML = `<i class="fa-solid fa-xmark"></i>`;
           document.getElementById("feedback-title").textContent = `回答错误！标准答案：${correctStr}`;
@@ -2355,6 +2387,163 @@
         isCorrect: true
       };
       renderCurrentQuestion();
+    }
+
+    // ============================================================================
+    // ENGLISH CLINICAL RATIONALE & EXPLANATION ENGINE
+    // Generates concise, high-yield English explanations for each question
+    // ============================================================================
+    
+    function getRoughChineseTranslation(text) {
+      let t = text;
+      // Stems
+      t = t.replace(/Which of the following is NOT/gi, "以下哪项**不是**");
+      t = t.replace(/Which of the following is/gi, "以下哪项是");
+      t = t.replace(/Which of the following/gi, "以下哪项");
+      t = t.replace(/What is the primary function of/gi, "主要功能是什么：");
+      t = t.replace(/What is the primary action of/gi, "主要药理作用是什么：");
+      t = t.replace(/What is the primary purpose of/gi, "主要目的是什么：");
+      t = t.replace(/What is the primary/gi, "主要是什么：");
+      t = t.replace(/What is the role of/gi, "作用是什么：");
+      t = t.replace(/Which type of/gi, "哪种类型的");
+      t = t.replace(/Which condition/gi, "哪种疾病/状况");
+      t = t.replace(/What is the most common cause of/gi, "最常见的原因是什么：");
+      t = t.replace(/Which medication is/gi, "哪种药物是");
+      t = t.replace(/Which drug is/gi, "哪种药物是");
+      t = t.replace(/What is a common symptom of/gi, "常见症状是什么：");
+      t = t.replace(/What is the term for/gi, "什么术语是指：");
+      t = t.replace(/Which of these/gi, "以下哪个");
+
+      // Core Keywords translation map
+      const dict = {
+        "immune system": "免疫系统",
+        "pathogens": "病原体",
+        "antibodies": "抗体",
+        "autoimmune": "自身免疫",
+        "inflammation": "炎症",
+        "rheumatoid arthritis": "类风湿性关节炎(RA)",
+        "osteoarthritis": "骨关节炎(OA)",
+        "blood pressure": "血压",
+        "blood glucose": "血糖",
+        "diabetes mellitus": "糖尿病",
+        "type 1 diabetes": "1型糖尿病",
+        "type 2 diabetes": "2型糖尿病",
+        "hypoglycaemia": "低血糖",
+        "hyperglycaemia": "高血糖",
+        "pharmacodynamics": "药效学",
+        "pharmacokinetics": "药代动力学",
+        "bioavailability": "生物利用度",
+        "first-pass metabolism": "首关效应(First-pass)",
+        "half-life": "半衰期",
+        "therapeutic index": "治疗指数",
+        "adverse drug reaction": "药物不良反应(ADR)",
+        "chronic kidney disease": "慢性肾脏病(CKD)",
+        "renal failure": "肾衰竭",
+        "heart failure": "心力衰竭",
+        "myocardial infarction": "心肌梗死(MI)",
+        "hypertension": "高血压",
+        "hypotension": "低血压",
+        "tachycardia": "心动过速",
+        "bradycardia": "心动过缓",
+        "cell membrane": "细胞膜",
+        "mitochondria": "线粒体",
+        "hypoxia": "缺氧",
+        "necrosis": "坏死",
+        "apoptosis": "细胞凋亡",
+        "opioid": "阿片类药物",
+        "analgesic": "镇痛药",
+        "neuropathic pain": "神经病理性疼痛",
+        "nociceptive pain": "伤害性疼痛",
+        "antibiotic": "抗生素",
+        "bacteria": "细菌",
+        "virus": "病毒",
+        "fungal": "真菌",
+        "allergic": "过敏",
+        "asthma": "哮喘",
+        "symptoms": "症状",
+        "treatment": "治疗",
+        "diagnosis": "诊断",
+        "patient": "患者",
+        "nurse": "护士",
+        "potassium": "钾(K)",
+        "sodium": "钠(Na)",
+        "calcium": "钙(Ca)",
+        "magnesium": "镁(Mg)",
+        "electrolyte": "电解质",
+        "fluid balance": "体液平衡",
+        "mental health": "心理健康",
+        "schizophrenia": "精神分裂症",
+        "depression": "抑郁症",
+        "anxiety": "焦虑症",
+        "insomnia": "失眠",
+        "benzodiazepines": "苯二氮卓类",
+        "nsaid": "非甾体抗炎药(NSAID)"
+      };
+
+      for (const [eng, zh] of Object.entries(dict)) {
+        const regex = new RegExp(`\\b${eng}\\b`, "gi");
+        t = t.replace(regex, `<span class="text-indigo-600 font-semibold underline decoration-indigo-200 underline-offset-2">${zh}</span>`);
+      }
+      return t;
+    }
+
+    function getQuestionExplanation(q) {
+      const letters = ["A", "B", "C", "D"];
+      let correctAnswersText = "";
+      if (q.isMulti) {
+        correctAnswersText = q.answer.map(i => `<strong>${letters[i]}) ${q.options[i]}</strong>`).join(" and ");
+      } else {
+        correctAnswersText = `<strong>${letters[q.answer]}) ${q.options[q.answer]}</strong>`;
+      }
+
+      const textLower = (q.question + " " + q.options.join(" ")).toLowerCase();
+
+      // Targeted high-yield rationale rules (Simplified Bilingual)
+      if (textLower.includes("first-pass metabolism") || textLower.includes("first pass")) {
+        return `First-pass metabolism reduces oral drug bioavailability before systemic circulation.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 首关效应会显著降低口服药物的生物利用度，因为药物在进入全身血液前已被肝脏代谢。`;
+      }
+      if (textLower.includes("half-life") || textLower.includes("steady state")) {
+        return `Steady-state concentration predictably takes 4 to 5 half-lives.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 药物达到稳态浓度（Steady-state）通常需要 4 到 5 个半衰期。`;
+      }
+      if (textLower.includes("therapeutic index")) {
+        return `A narrow therapeutic index (TI) demands strict therapeutic drug monitoring (TDM).<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 治疗指数（TI）越窄，越需要严格的药物浓度监测以防中毒。`;
+      }
+      if (textLower.includes("dka") || textLower.includes("ketoacidosis") || textLower.includes("fruity breath")) {
+        return `In DKA, absolute insulin deficiency causes lipolysis into ketones. Acetone expiration leads to fruity breath.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 糖尿病酮症酸中毒(DKA)中，胰岛素绝对缺乏导致脂肪分解产生酮体，呼出气体有烂苹果味。`;
+      }
+      if (textLower.includes("hhs") || textLower.includes("hyperosmolar")) {
+        return `HHS features extreme hyperglycaemia without significant ketoacidosis, common in Type 2 diabetes.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 高渗性高血糖综合征(HHS)多见于2型糖尿病，特征是极度高血糖脱水，但无明显酮症酸中毒。`;
+      }
+      if (textLower.includes("metformin")) {
+        return `Metformin decreases hepatic glucose production with low risk of hypoglycaemia.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 二甲双胍主要通过减少肝糖原生成降糖，单独使用极少引起低血糖。`;
+      }
+      if (textLower.includes("nsaid") || textLower.includes("prostaglandin") || textLower.includes("cyclooxygenase")) {
+        return `NSAIDs inhibit COX enzymes, reducing prostaglandins. A key adverse effect is GI ulceration.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> NSAIDs（如布洛芬）通过抑制COX酶减少前列腺素，最常见副作用是胃肠道溃疡或出血。`;
+      }
+      if (textLower.includes("opioid") || textLower.includes("naloxone") || textLower.includes("morphine")) {
+        return `Opioids inhibit CNS pain signals. Naloxone is used to reverse respiratory depression in overdose.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 阿片类药物抑制中枢疼痛信号。纳洛酮（Naloxone）是其特异性解毒剂，用于抢救呼吸抑制。`;
+      }
+      if (textLower.includes("gaba") || textLower.includes("benzodiazepine") || textLower.includes("flumazenil")) {
+        return `Benzodiazepines enhance GABA-mediated CNS inhibition. Flumazenil is the specific antagonist.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 苯二氮卓类药物增强GABA的抑制作用（镇静催眠）。氟马西尼（Flumazenil）是其解毒剂。`;
+      }
+      if (textLower.includes("methotrexate") || textLower.includes("folic acid")) {
+        return `Methotrexate is a DMARD for RA. Folic acid is co-prescribed to mitigate toxicity.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 甲氨蝶呤(MTX)是治类风湿首选药，常同服叶酸以减轻胃肠和肝脏毒性。`;
+      }
+      if (textLower.includes("gout") || textLower.includes("uric acid") || textLower.includes("colchicine") || textLower.includes("allopurinol")) {
+        return `Gout involves uric acid crystals. Colchicine treats acute flares; allopurinol prevents them.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 痛风由尿酸结晶引起。秋水仙碱治急性发作，别嘌醇用于日常预防降尿酸。`;
+      }
+      if (textLower.includes("hypokalemia") || textLower.includes("hyperkalemia") || textLower.includes("potassium")) {
+        return `Potassium imbalances risk lethal cardiac arrhythmias. Acute hyperkalemia is treated with IV calcium gluconate.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 钾离子紊乱极易引发致命心律失常。严重高钾血症需静脉推注葡萄糖酸钙保护心肌。`;
+      }
+      if (textLower.includes("beta-lactam") || textLower.includes("penicillin") || textLower.includes("cell wall")) {
+        return `Beta-lactams inhibit bacterial cell wall synthesis by binding to PBPs.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> β-内酰胺类抗生素（如青霉素）通过破坏细菌细胞壁合成来杀菌。`;
+      }
+      if (textLower.includes("ckd") || textLower.includes("gfr") || textLower.includes("creatinine")) {
+        return `CKD is staged by GFR. Stage 5 (<15 mL/min) requires renal replacement therapy.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 慢性肾病(CKD)由肾小球滤过率(GFR)分期。5期（<15）需要透析或肾移植。`;
+      }
+
+      // Default concise, context-aware rationale
+      return `Correct option represents standard evidence-based practice in this module.<br><span class="text-amber-700 font-bold mt-1.5 block">💡 中文简析:</span> 此为 <strong>${q.moduleTitle}</strong> 模块重点基础，请熟记选项对应的临床应用或病理机制。`;
     }
 
     function prevQuestion() {
@@ -2653,6 +2842,28 @@
                 </div>
               `;
             }).join("")}
+          </div>
+
+          <!-- Bilingual Rationale inside Mistake Card -->
+          <div class="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs space-y-3">
+            <div>
+              <div class="font-bold flex items-center gap-1.5 text-indigo-900 border-b border-indigo-100 pb-1.5 mb-1.5">
+                <i class="fa-solid fa-language text-indigo-500"></i>
+                <span>题目中文参考 (Translation)</span>
+              </div>
+              <div class="leading-relaxed pl-1 text-slate-700">
+                ${getRoughChineseTranslation(q.question)}
+              </div>
+            </div>
+            <div>
+              <div class="font-bold flex items-center gap-1.5 text-amber-900 border-b border-amber-100 pb-1.5 mb-1.5">
+                <i class="fa-solid fa-lightbulb text-amber-600"></i>
+                <span>简易双语解析 (Rationale)</span>
+              </div>
+              <div class="leading-relaxed pl-1 text-slate-700">
+                ${getQuestionExplanation(q)}
+              </div>
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">

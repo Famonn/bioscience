@@ -13,6 +13,39 @@
     body {
       -webkit-tap-highlight-color: transparent;
     }
+  </style>
+
+  <script>
+    // 自动监听并动态移除多余的 "Gemini AI 实时中英文逐题精讲" 模块
+    const removeGeminiAIParts = () => {
+      const iter = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      let node;
+      const targets = [];
+      while ((node = iter.nextNode())) {
+        if (node.nodeValue.includes("Gemini AI 实时中英文") || node.nodeValue.includes("完整翻译 + 简易中英解析")) {
+          targets.push(node.parentElement);
+        }
+      }
+      targets.forEach(el => {
+        // 寻找到包裹该文字的最外层卡片容器并直接将其彻底隐藏
+        const card = el.closest('.rounded-xl, .p-3, .mt-3, .mt-4, [class*="bg-purple"]');
+        if (card && card !== document.body) {
+          card.style.display = 'none';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    };
+    
+    // 启动实时 DOM 监听，确保在任何时候弹出该卡片都会被瞬间抹除
+    const domObserver = new MutationObserver(removeGeminiAIParts);
+    document.addEventListener('DOMContentLoaded', () => {
+      removeGeminiAIParts();
+      domObserver.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
+
+  <script>
     function formatGeminiTutorResponse(q, data) {
       return getQuestionExplanation(q);
     }
